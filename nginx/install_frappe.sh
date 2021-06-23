@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FRAPPE_BRANCH=${4}
+FRAPPE_BRANCH=${1}
 
 [ "${FRAPPE_BRANCH}" ] && FRAMEWORK_BRANCH="-b ${FRAPPE_BRANCH}"
 
