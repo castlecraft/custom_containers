@@ -1,5 +1,6 @@
 ### Introduction
 
+- This repo is based on official frappe_docker documentation to build custom apps.
 - Fork this repo to build your own image with ERPNext and list of custom Frappe apps.
 - Change `ci/clone-apps.sh` script to clone your private and public apps. This repo will install following apps:
   - https://github.com/yrestom/POS-Awesome
