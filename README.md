@@ -1,43 +1,45 @@
 ### Introduction
 
 - Fork this repo to build your own image with ERPNext and list of custom Frappe apps.
-- Change `nginx/Dockerfile` and add required apps. Refer comments in the file.
-- Change `worker/Dockerfile` and add required apps.
-
-Example file uses following apps:
-
-- https://github.com/yrestom/POS-Awesome
-- https://github.com/zerodha/frappe-attachments-s3
-- https://github.com/pipech/frappe-metabase
-- https://github.com/franknyarkoh/bookings
-- https://github.com/frappe/bench_manager
+- Change `ci/clone-apps.sh` script to clone your private and public apps. This repo will install following apps:
+  - https://github.com/yrestom/POS-Awesome
+  - https://github.com/zerodha/frappe-attachments-s3
+  - https://github.com/pipech/frappe-metabase
+  - https://github.com/franknyarkoh/bookings
+  - https://github.com/frappe/bench_manager
+- Change `images/backend.Dockerfile` to copy and install required apps with `install-app`.
+- Change `images/frontend.Dockerfile` to copy and install required apps `install-app`.
+- Change `docker-bake.hcl` for builds as per need.
+- Workflows from `.github/workflows` will build latest or tagged images. Change as per need.
 
 ### Build images
 
 Execute from root of app repo
 
-For nginx:
+Clone,
 
 ```shell
-# For edge
-docker build -t custom-erpnext-nginx:latest nginx
-
-# For version-12
-docker build --build-arg=FRAPPE_BRANCH=version-12 -t custom-erpnext-nginx:v12 nginx
-
-# For version-13
-docker build --build-arg=FRAPPE_BRANCH=version-13 -t custom-erpnext-nginx:v13 nginx
+./ci/clone-apps.sh
 ```
 
-For worker:
+Set environment variables,
+
+- `FRAPPE_VERSION` set to use frappe version during building images. Default is `version-13`.
+- `ERPNEXT_VERSION` set to use erpnext version during building images. Default is `version-13`.
+- `VERSION` set the tag version. Default is `latest`.
+- `REGISTRY_NAME` set the registry name. Default is `custom_app`.
+- `BACKEND_IMAGE_NAME` set worker image name. Default is `custom_worker`.
+- `FRONTEND_IMAGE_NAME` set nginx image name. Default is `custom_nginx`.
+
+Build,
 
 ```shell
-# For edge
-docker build -t custom-erpnext-worker:latest worker
-
-# For version-12
-docker build --build-arg=FRAPPE_BRANCH=version-12 -t custom-erpnext-worker:v12 worker
-
-# For version-13
-docker build --build-arg=FRAPPE_BRANCH=version-13 -t custom-erpnext-worker:v13 worker
+docker buildx bake -f docker-bake.hcl --load
 ```
+
+Note:
+
+- Use `docker buildx bake --load` to load images for usage with docker.
+- Use `docker buildx bake --push` to push images to registry.
+- Use `docker buildx bake --help` for more information.
+- Change version in `version.txt` to build tagged images from the changed version.
