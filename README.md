@@ -11,8 +11,9 @@
 - Change `images/frontend.Dockerfile` to copy and install required apps `install-app`.
 - Change `docker-bake.hcl` for builds as per need.
 - Workflows from `.github/workflows` will build latest or tagged images. Change as per need.
+- Registry will build images automatically and publish to github container registry.
 
-### Build images
+### Manually Build images
 
 Execute from root of app repo
 
