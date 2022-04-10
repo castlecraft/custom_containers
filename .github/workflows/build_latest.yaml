@@ -33,20 +33,25 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Get Base Versions
+        id: get-base-versions
+        run: |
+          echo "::set-output name=FRAPPE_VERSION::$(jq -r .frappe base_versions.json)"
+          echo "::set-output name=ERPNEXT_VERSION::$(jq -r .erpnext base_versions.json)"
+
       - name: Get Repo
         id: get-repo
         run: echo "::set-output name=REPOSITORY::${GITHUB_REPOSITORY#*/}"
 
       - name: Push
-        if: ${{ github.repository == 'castlecraft/custom_frappe_docker' && github.event_name != 'pull_request' }}
         uses: docker/bake-action@v1.7.0
         with:
           push: true
           no-cache: true
           # set: "*.platform=linux/amd64,linux/arm64"
         env:
-          FRAPPE_VERSION: v13.25.0
-          ERPNEXT_VERSION: v13.25.1
+          FRAPPE_VERSION: ${{ steps.get-base-versions.outputs.FRAPPE_VERSION }}
+          ERPNEXT_VERSION: ${{ steps.get-base-versions.outputs.ERPNEXT_VERSION }}
           REGISTRY_NAME: ghcr.io/${{ github.repository_owner }}
           VERSION: latest
           BACKEND_IMAGE_NAME: ${{ steps.get-repo.outputs.REPOSITORY }}/worker

@@ -1,15 +1,16 @@
 ### Introduction
 
-- This repo is based on official frappe_docker documentation to build custom apps.
+- This repo is based on official frappe_docker documentation to build [custom apps](https://github.com/frappe/frappe_docker/blob/main/custom_app/README.md).
 - Fork this repo to build your own image with ERPNext and list of custom Frappe apps.
-- Change `ci/clone-apps.sh` script to clone your private and public apps. This repo will install following apps:
+- Change the `frappe` and `erpnext` versions in `base_versions.json` to use them as base. These values correspond to tags and branch names on the github frappe and erpnext repo. e.g. `version-13`, `v13.25.1`
+- Change `ci/clone-apps.sh` script to clone your private and public apps. Read comments in the file to update it as per need. This repo will install following apps:
   - https://github.com/yrestom/POS-Awesome
   - https://github.com/zerodha/frappe-attachments-s3
   - https://github.com/pipech/frappe-metabase
   - https://github.com/franknyarkoh/bookings
   - https://github.com/frappe/bench_manager
 - Change `images/backend.Dockerfile` to copy and install required apps with `install-app`.
-- Change `images/frontend.Dockerfile` to copy and install required apps `install-app`.
+- Change `images/frontend.Dockerfile` to copy and install required apps with `install-app`.
 - Change `docker-bake.hcl` for builds as per need.
 - Workflows from `.github/workflows` will build latest or tagged images. Change as per need.
 - Registry will build images automatically and publish to github container registry.
