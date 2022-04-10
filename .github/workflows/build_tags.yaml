@@ -8,7 +8,7 @@ on:
       - version.txt
 
 jobs:
-  login:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
