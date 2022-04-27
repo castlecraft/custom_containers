@@ -1,11 +1,11 @@
 name: Build tagged images
 
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - version.txt
+on: [workflow_dispatch]
+#  push:
+#    branches:
+#      - main
+#    paths:
+#      - version.txt
 
 jobs:
   build:
