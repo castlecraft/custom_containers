@@ -8,7 +8,6 @@ FROM frappe/assets-builder:${FRAPPE_VERSION} as assets
 COPY repos apps
 
 RUN install-app posawesome && \
-    install-app frappe_s3_attachment && \
     install-app metabase_integration && \
     install-app bookings && \
     install-app bench_manager

@@ -5,7 +5,6 @@
 - Change the `frappe` and `erpnext` versions in `base_versions.json` to use them as base. These values correspond to tags and branch names on the github frappe and erpnext repo. e.g. `version-13`, `v13.25.1`
 - Change `ci/clone-apps.sh` script to clone your private and public apps. Read comments in the file to update it as per need. This repo will install following apps:
   - https://github.com/yrestom/POS-Awesome
-  - https://github.com/zerodha/frappe-attachments-s3
   - https://github.com/pipech/frappe-metabase
   - https://github.com/franknyarkoh/bookings
   - https://github.com/frappe/bench_manager
