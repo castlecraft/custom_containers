@@ -20,7 +20,7 @@ build_latest:
     - mkdir -p $HOME/.docker/cli-plugins
     - curl -sSLo $HOME/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-amd64
     - chmod +x ~/.docker/cli-plugins/docker-buildx
-    - docker buildx create --use
+    - docker buildx create --name ci_build_latest --use
   script:
     - ./ci/clone-apps.sh
     - export FRAPPE_VERSION=$(jq -r .frappe base_versions.json)
@@ -30,6 +30,10 @@ build_latest:
     - export BACKEND_IMAGE_NAME=worker
     - export FRONTEND_IMAGE_NAME=nginx
     - docker buildx bake --push
+    # Cleanup runner
+    - docker buildx stop ci_build_latest
+    - docker buildx rm ci_build_latest
+    - docker volume prune -f
 
 build_version:
   stage: build
@@ -47,7 +51,7 @@ build_version:
     - mkdir -p $HOME/.docker/cli-plugins
     - curl -sSLo $HOME/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-amd64
     - chmod +x ~/.docker/cli-plugins/docker-buildx
-    - docker buildx create --use
+    - docker buildx create --name ci_build_version --use
   script:
     - ./ci/clone-apps.sh
     - export FRAPPE_VERSION=$(jq -r .frappe base_versions.json)
@@ -57,3 +61,7 @@ build_version:
     - export BACKEND_IMAGE_NAME=worker
     - export FRONTEND_IMAGE_NAME=nginx
     - docker buildx bake --push
+    # Cleanup runner
+    - docker buildx stop ci_build_version
+    - docker buildx rm ci_build_version
+    - docker volume prune -f
