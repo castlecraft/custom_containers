@@ -1,15 +1,29 @@
-# syntax=docker/dockerfile:1.3
-
 ARG FRAPPE_VERSION
 ARG ERPNEXT_VERSION
 
-FROM frappe/assets-builder:${FRAPPE_VERSION} as assets
+FROM frappe/bench:latest as assets
 
-COPY repos apps
+ARG FRAPPE_VERSION
+RUN bench init --version=${FRAPPE_VERSION} --skip-redis-config-generation --verbose --skip-assets /home/frappe/frappe-bench
 
-RUN install-app posawesome && \
-    install-app wiki
+WORKDIR /home/frappe/frappe-bench
 
-FROM frappe/erpnext-nginx:${ERPNEXT_VERSION}
+# Comment following if ERPNext not required
+ARG ERPNEXT_VERSION
+RUN bench get-app --branch=${ERPNEXT_VERSION} --skip-assets --resolve-deps erpnext
 
-COPY --from=assets /out /usr/share/nginx/html
+COPY --chown=frappe:frappe repos apps
+
+RUN bench setup requirements
+
+RUN bench build --production --verbose --hard-link
+
+FROM frappe/frappe-nginx:${FRAPPE_VERSION}
+
+USER root
+
+RUN rm -fr /usr/share/nginx/html/assets
+
+COPY --from=assets /home/frappe/frappe-bench/sites/assets /usr/share/nginx/html/assets
+
+USER 1000

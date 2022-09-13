@@ -7,10 +7,11 @@
   - https://github.com/yrestom/POS-Awesome
   - https://github.com/frappe/wiki
 - Change `images/backend.Dockerfile` to copy and install required apps with `install-app`.
-- Change `images/frontend.Dockerfile` to copy and install required apps with `install-app`.
+- Change `images/frontend.Dockerfile` to install ERPNext if required.
 - Change `docker-bake.hcl` for builds as per need.
-- Workflows from `.github/workflows` will build latest or tagged images. Change as per need.
-- Registry will build images automatically and publish to github container registry.
+- Workflows from `.github/workflows` will build latest or tagged images using GitHub. Change as per need.
+- Runner will build images automatically and publish to container registry.
+- Use `gitlab-ci.yml` in case of Gitlab CI.
 
 ### Manually Build images
 
@@ -24,8 +25,8 @@ Clone,
 
 Set environment variables,
 
-- `FRAPPE_VERSION` set to use frappe version during building images. Default is `version-13`.
-- `ERPNEXT_VERSION` set to use erpnext version during building images. Default is `version-13`.
+- `FRAPPE_VERSION` set to use frappe version during building images. Default is `version-14`.
+- `ERPNEXT_VERSION` set to use erpnext version during building images. Default is `version-14`.
 - `VERSION` set the tag version. Default is `latest`.
 - `REGISTRY_NAME` set the registry name. Default is `custom_app`.
 - `BACKEND_IMAGE_NAME` set worker image name. Default is `custom_worker`.
