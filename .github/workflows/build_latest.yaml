@@ -44,7 +44,7 @@ jobs:
         run: echo "::set-output name=REPOSITORY::${GITHUB_REPOSITORY#*/}"
 
       - name: Push
-        uses: docker/bake-action@v2.2.0
+        uses: docker/bake-action@v2.3.0
         with:
           push: true
           no-cache: true
