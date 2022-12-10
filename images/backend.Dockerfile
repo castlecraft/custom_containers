@@ -7,7 +7,7 @@ COPY repos ../apps
 
 USER root
 
-RUN install-app posawesome && \
-    install-app wiki
+RUN install-app castlecraft && \
+    install-app microsoft_integration
 
 USER frappe

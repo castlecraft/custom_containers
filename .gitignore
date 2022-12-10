@@ -1,2 +1,11 @@
 .env
 repos
+
+# VS Code devcontainer
+.devcontainer
+development/*
+!development/README.md
+!development/apps.json
+!development/fetch_admin_keys.py
+!development/setup.sh
+!development/vscode-example/

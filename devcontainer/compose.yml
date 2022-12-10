@@ -1,0 +1,104 @@
+version: "3.7"
+
+services:
+  mariadb:
+    image: bitnami/mariadb:10.6
+    environment:
+      MARIADB_CHARACTER_SET: utf8mb4
+      MARIADB_COLLATE: utf8mb4_unicode_ci
+      MARIADB_ROOT_PASSWORD: 123
+      MARIADB_EXTRA_FLAGS: --skip-character-set-client-handshake --skip-innodb-read-only-compressed
+    volumes:
+      - mariadb:/bitnami/mariadb
+    restart: unless-stopped
+
+  redis-cache:
+    image: redis:alpine
+
+  redis-queue:
+    image: redis:alpine
+
+  redis-socketio:
+    image: redis:alpine
+
+  # # https://github.com/JAremko/docker-x11-bridge
+  # x11-bridge:
+  #   image: jare/x11-bridge
+  #   volumes:
+  #     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     MODE: tcp
+  #     XPRA_HTML: "yes"
+  #     DISPLAY: ":14"
+  #     XPRA_TCP_PORT: "8080"
+  #     # This password can be anything you want.
+  #     XPRA_PASSWORD: admin
+
+  # minio:
+  #   image: minio/minio:latest
+  #   environment:
+  #     - MINIO_ROOT_USER=AKIAIOSFODNN7EXAMPLE
+  #     - MINIO_ROOT_PASSWORD=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+  #   volumes:
+  #     - minio:/data
+  #   command:
+  #     - server
+  #     - --console-address=:10000
+  #     - /data
+  #   ports:
+  #     - 10000:10000
+
+  # # docker run -t -i -p 3025:3025 -p 3110:3110 -p 3143:3143 -p 3465:3465 -p 3993:3993 -p 3995:3995 -p 8800:8080 greenmail/standalone:1.6.10
+  # greenmail:
+  #   image: greenmail/standalone:1.6.10
+  #   ports:
+  #     - 3025:3025
+  #     - 3110:3110
+  #     - 3143:3143
+  #     - 3465:3465
+  #     - 3993:3993
+  #     - 8800:8080
+
+  # # Enable PostgreSQL only if you use it, see development/README.md for more information.
+  # postgresql:
+  #   image: postgres:11.8
+  #   environment:
+  #     POSTGRES_PASSWORD: 123
+  #   volumes:
+  #     - postgresql:/var/lib/postgresql/data
+
+  # mailhog:
+  #   image: mailhog/mailhog:v1.0.1
+  #   environment:
+  #     - MH_STORAGE=maildir
+  #   volumes:
+  #     - mailhog:/maildir
+  #   ports:
+  #     - 1025:1025
+  #     - 8025:8025
+
+  frappe:
+    image: frappe/bench:latest
+    command: ["tail", "-f", "/dev/null"]
+    environment:
+      - SHELL=/bin/bash
+    volumes:
+      - ..:/workspace
+      - ${HOME}/.ssh:/home/frappe/.ssh
+    working_dir: /workspace/development
+    ports:
+      - 8000-8005:8000-8005
+      - 9000-9005:9000-9005
+    extra_hosts:
+      - custom.localhost:172.17.0.1
+    # volumes_from:
+    #   - x11-bridge:rw
+    # depends_on:
+    #   - x11-bridge
+
+volumes:
+  mariadb:
+  # mailhog:
+  # minio:
