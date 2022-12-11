@@ -103,13 +103,26 @@ helm install mariadb -n mariadb bitnami/mariadb \
 
 ### Setup ERPNext
 
+Create image registry secret in erpnext namespace
+
 ```shell
 kubectl create namespace erpnext
+
+kubectl -n erpnext create secret docker-registry ghcr-cred \
+  --docker-server=ghcr.io \
+  --docker-username=$GITHUB_USER \
+  --docker-password=$GITHUB_PAT
+```
+
+Note: Replace `ghcr.io`, `$GITHUB_USER` and `$GITHUB_PAT` with your credentials.
+
+```shell
 helm repo add frappe https://helm.erpnext.com
 helm upgrade \
   --install frappe-bench \
   --namespace erpnext \
   frappe/erpnext \
+  --set imagePullSecrets\[0\].name=ghcr-cred \
   --set mariadb.enabled=false \
   --set dbHost=mariadb.mariadb.svc.cluster.local \
   --set dbPort=3306 \
@@ -118,11 +131,13 @@ helm upgrade \
   --set nginx.image.repository=ghcr.io/castlecraft/custom_frappe_docker/nginx \
   --set nginx.image.tag=1.0.0 \
   --set worker.image.repository=ghcr.io/castlecraft/custom_frappe_docker/worker \
-  --set worker.image.tag=1.0.0
+  --set worker.image.tag=1.0.0 \
   --set persistence.worker.enabled=true \
   --set persistence.worker.size=4Gi \
   --set persistence.worker.storageClass=nfs
 ```
+
+Note: Use `imagePullSecrets` only if image registry is private and needs auth with credentials.
 
 ### Setup Bench Operator
 
