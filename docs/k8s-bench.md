@@ -1,12 +1,12 @@
 ## Topics
 
-- Provision K8s
-- Provision Loadbalancer Service
-- Provision RWX StorageClass
-- Provision Database
-- Setup ERPNext
-- Setup Bench Operator
-- Frappe App API Call
+- [Provision K8s](#provision-k8s)
+- [Provision Loadbalancer Service](#provision-loadbalancer-service)
+- [Provision RWX StorageClass](#provision-rwx-storageclass)
+- [Provision Database](#provision-database)
+- [Setup ERPNext](#setup-erpnext)
+- [Setup Bench Operator](#setup-bench-operator)
+- [ReST API Call](#rest-api-call)
 
 ### Provision K8s
 
@@ -142,7 +142,7 @@ Port forward kubernetes service locally on port 3000.
 kubectl port-forward -n bench-system svc/manage-sites-k8s-bench 3000:8000
 ```
 
-### Frappe App API Call
+### ReST API Call
 
 Create Site:
 
@@ -211,6 +211,11 @@ curl -X POST -u admin:changeit http://0.0.0.0:3000/bench-command \
 }
 '
 ```
+
+Notes:
+
+- Refer [K8s Bench docs](https://k8s-bench.castlecraft.in) for more.
+- In case of frappe apps, add `k8s_bench_url`, `k8s_bench_key` and `k8s_bench_secret` in `site_config.json` and use it to make python `requests`. You can use the internal kubernetes service url e.g. `http://manage-sites-k8s-bench.bench-system.svc.cluster.local:8000` instead of exposing the api if your frappe app also resides on same cluster.
 
 ## Teardown
 

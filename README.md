@@ -44,3 +44,11 @@ Note:
 - Use `docker buildx bake --push` to push images to registry.
 - Use `docker buildx bake --help` for more information.
 - Change version in `version.txt` to build tagged images from the changed version.
+
+### Development
+
+Refer development directory to [start development](development/README.md)
+
+### K8s Bench
+
+Refer docs directory to use [Kubernetes Bench Operator](docs/k8s-bench.md)
