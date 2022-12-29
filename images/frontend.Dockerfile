@@ -1,10 +1,13 @@
 ARG FRAPPE_VERSION
 ARG ERPNEXT_VERSION
+ARG PYTHON_VERSION
 
 FROM frappe/bench:latest as assets
 
 ARG FRAPPE_VERSION
-RUN bench init --version=${FRAPPE_VERSION} --skip-redis-config-generation --verbose --skip-assets /home/frappe/frappe-bench
+# Use 3.9.9 for version 13
+ARG PYTHON_VERSION=3.10.5
+RUN PYENV_VERSION=${PYTHON_VERSION} bench init --version=${FRAPPE_VERSION} --skip-redis-config-generation --verbose --skip-assets /home/frappe/frappe-bench
 
 WORKDIR /home/frappe/frappe-bench
 
