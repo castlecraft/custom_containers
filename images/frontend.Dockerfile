@@ -16,7 +16,12 @@ COPY --chown=frappe:frappe repos apps
 
 RUN bench setup requirements
 
-RUN bench build --production --verbose --hard-link
+RUN export BUILD_OPTS="--production --hard-link" && \
+  if [ -z "${FRAPPE_BRANCH##*v12*}" ] || [ -z "${FRAPPE_BRANCH##*v13*}" ] \
+    || [ "$FRAPPE_BRANCH" = "version-12" ] || [ "$FRAPPE_BRANCH" = "version-13" ]; then \
+    export BUILD_OPTS="--make-copy"; \
+  fi && \
+  FRAPPE_ENV=production bench build --verbose ${BUILD_OPTS}
 
 FROM frappe/frappe-nginx:${FRAPPE_VERSION}
 
