@@ -4,6 +4,10 @@ ARG PYTHON_VERSION
 
 FROM frappe/bench:latest as assets
 
+ARG NODE_VERSION
+ENV NVM_DIR=/home/frappe/.nvm
+ENV PATH ${NVM_DIR}/versions/node/v${NODE_VERSION}/bin/:${PATH}
+
 ARG FRAPPE_VERSION
 # Use 3.9.9 for version 13
 ARG PYTHON_VERSION=3.10.5
