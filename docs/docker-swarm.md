@@ -171,7 +171,7 @@ In case of docker setup there is not CRON scheduler running. It is needed to tak
 
 ### Setup ERPNext
 
-- `compose/erpnext.yml`: Use to create the `erpnext` stack. Set `VERSION` to version of choice. e.g. `v14.13.0`. Set `SITES` variable as list of sites quoted in back tick  (`` ` ``) and separated by comma (`,`). Example ``SITES=`one.example.com`,`two.example.com` ``.
-- `compose/configure-erpnext.yml`: Use to setup `sites/common_site_config.json`. Set `VERSION` and `SITES_VOLUME_NAME` environment variables.
-- Exec into the `backend` container and create sites with `bench new-site --no-mariadb-socket` command.
-- `compose/erpnext-backup.yml`: Use to setup automatic backups add with appropriate changes in file for restic snapshots and snapshot pruning
+- `compose/erpnext.yml`: Use to create the `erpnext` stack. Set `VERSION` to version of choice. e.g. `v14.13.0`. Set `SITES` variable as list of sites quoted in back tick  (`` ` ``) and separated by comma (`,`). Example ``SITES=`one.example.com`,`two.example.com` ``. Set `BENCH_NAME` optionally in case of multiple benches, defaults to `erpnext`.
+- `compose/configure-erpnext.yml`: Use to setup `sites/common_site_config.json`. Set `VERSION` and optionally `BENCH_NAME` environment variables.
+- `compose/create-site.yml`: Use to create a site. Set `VERSION` and optionally `BENCH_NAME` environment variables.
+- `compose/erpnext-backup.yml`: Use to backup and push snapshots. Set environment variables mentioned in comments in the file.
