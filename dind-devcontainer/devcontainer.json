@@ -1,0 +1,15 @@
+{
+  "name": "Frappe Bench for Kube dev",
+  "remoteUser": "frappe",
+  "settings": {
+    "debug.node.autoAttach": "disabled"
+  },
+  "dockerComposeFile": "./compose.yml",
+  "service": "frappe",
+  "workspaceFolder": "/workspace/development",
+  "shutdownAction": "stopCompose",
+  "extensions": [
+    "ms-python.python",
+    "visualstudioexptteam.vscodeintellicode"
+  ]
+}

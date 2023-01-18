@@ -1,0 +1,28 @@
+version: "3.7"
+
+services:
+  db:
+    image: mariadb:10.6
+    healthcheck:
+      test: mysqladmin ping -h localhost --password=${DB_PASSWORD:-admin}
+      interval: 1s
+      retries: 15
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+      - --skip-innodb-read-only-compressed
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-admin}
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - mariadb-network
+
+volumes:
+  db-data:
+
+networks:
+  mariadb-network:
+    name: mariadb-network
+    attachable: true

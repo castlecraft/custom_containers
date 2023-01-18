@@ -1,11 +1,11 @@
 version: 2
 updates:
-  - package-ecosystem: github-actions
-    directory: /
+  - package-ecosystem: docker
+    directory: devcontainer
     schedule:
       interval: daily
 
   - package-ecosystem: docker
-    directory: images
+    directory: kube-devcontainer
     schedule:
       interval: daily

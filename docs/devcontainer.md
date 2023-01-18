@@ -1,11 +1,4 @@
-## Prerequisites
-
-- Install docker and docker compose cli plugin
-- Add SSH keys to git for easy access to repo
-- Copy `devcontainer` directory to `.devcontainer`.
-- Copy `development/vscode-example` to `development/.vscode`.
-
-## Setup
+## Setup VS Code devcontainers
 
 Reopen in VS Code devcontainer, enter the `frappe` container.
 
