@@ -173,5 +173,5 @@ In case of docker setup there is not CRON scheduler running. It is needed to tak
 
 - `compose/erpnext.yml`: Use to create the `erpnext` stack. Set `VERSION` to version of choice. e.g. `v14.13.0`. Set `SITES` variable as list of sites quoted in back tick  (`` ` ``) and separated by comma (`,`). Example ``SITES=`one.example.com`,`two.example.com` ``. Set `BENCH_NAME` optionally in case of multiple benches, defaults to `erpnext`.
 - `compose/configure-erpnext.yml`: Use to setup `sites/common_site_config.json`. Set `VERSION` and optionally `BENCH_NAME` environment variables.
-- `compose/create-site.yml`: Use to create a site. Set `VERSION` and optionally `BENCH_NAME` environment variables.
+- `compose/create-site.yml`: Use to create a site. Set `VERSION` and optionally `BENCH_NAME` environment variables. Change the command for site name, apps to be installed, admin password and db root password.
 - `compose/erpnext-backup.yml`: Use to backup and push snapshots. Set environment variables mentioned in comments in the file.
