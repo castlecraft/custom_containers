@@ -25,7 +25,7 @@ apt-get update && apt-get dist-upgrade -y
 Setup unattended upgrades
 
 ```shell
-dpkg-reconfigure --priority=low unattended-upgrades
+dpkg-reconfigure --priority=medium unattended-upgrades
 ```
 
 Add non-root sudo user
