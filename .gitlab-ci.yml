@@ -13,7 +13,7 @@ build_version:
     - |
       source ./ci/build.env
       mkdir -p /kaniko/.docker
-      export IMAGE_NAME=${CI_REGISTRY:-${REGISTRY}}/${CI_PROJECT_NAMESPACE:-${PROJECT_NAMESPACE}}/${IMAGE_NAME:-${IMAGE}}
+      export IMAGE_NAME=${CI_REGISTRY:-${REGISTRY}}/${CI_PROJECT_NAMESPACE:-${PROJECT_NAMESPACE}}/${CI_PROJECT_NAME:-${PROJECT_NAME}}/${IMAGE_NAME:-${IMAGE}}
       export BASIC_AUTH=$(echo -n ${CI_REGISTRY_USER}:${CI_JOB_TOKEN} | base64)
       echo "{
         \"auths\": {
