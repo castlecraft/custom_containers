@@ -72,10 +72,10 @@ jobs:
             ghcr.io/${{ github.repository }}/${{ inputs.image || env.IMAGE }}:latest
           cache: true
           build-args: |
-            FRAPPE_PATH=${{ inputs.frappe-repo || env.FRAPPE_REPO }}
-            FRAPPE_BRANCH=${{ inputs.frappe-version || env.FRAPPE_VERSION }}
-            PYTHON_VERSION=${{ inputs.py-version || env.PY_VERSION }}
-            NODE_VERSION=${{ inputs.nodejs-version || env.NODEJS_VERSION }}
-            APPS_JSON_BASE64=${{ inputs.apps-json-base64 || env.APPS_JSON_BASE64 }}
+            FRAPPE_PATH=${{ inputs.frappe-repo || env.FRAPPE_REPO }},
+            FRAPPE_BRANCH=${{ inputs.frappe-version || env.FRAPPE_VERSION }},
+            PYTHON_VERSION=${{ inputs.py-version || env.PY_VERSION }},
+            NODE_VERSION=${{ inputs.nodejs-version || env.NODEJS_VERSION }},
+            APPS_JSON_BASE64=${{ inputs.apps-json-base64 || env.APPS_JSON_BASE64 }},
           context: ${{ inputs.context || env.CONTEXT }}
           file: ${{ inputs.dockerfile || env.DOCKERFILE }}
