@@ -68,14 +68,13 @@ jobs:
         with:
           push: true
           cache: true
-          build-args: |
-            FRAPPE_PATH=${{ inputs.frappe-repo || env.FRAPPE_REPO }},
-            FRAPPE_BRANCH=${{ inputs.frappe-version || env.FRAPPE_VERSION }},
-            PYTHON_VERSION=${{ inputs.py-version || env.PY_VERSION }},
-            NODE_VERSION=${{ inputs.nodejs-version || env.NODEJS_VERSION }},
-            APPS_JSON_BASE64=${{ inputs.apps-json-base64 || env.APPS_JSON_BASE64 }},
           kaniko-args: |
-            --context=${{ inputs.context || env.CONTEXT }},
-            --destination=ghcr.io/${{ github.repository }}/${{ inputs.image || env.IMAGE }}:${{ inputs.version || env.VERSION }},
+            --build-arg=FRAPPE_PATH=${{ inputs.frappe-repo || env.FRAPPE_REPO }}
+            --build-arg=FRAPPE_BRANCH=${{ inputs.frappe-version || env.FRAPPE_VERSION }}
+            --build-arg=PYTHON_VERSION=${{ inputs.py-version || env.PY_VERSION }}
+            --build-arg=NODE_VERSION=${{ inputs.nodejs-version || env.NODEJS_VERSION }}
+            --build-arg=APPS_JSON_BASE64=${{ inputs.apps-json-base64 || env.APPS_JSON_BASE64 }}
+            --context=${{ inputs.context || env.CONTEXT }}
+            --destination=ghcr.io/${{ github.repository }}/${{ inputs.image || env.IMAGE }}:${{ inputs.version || env.VERSION }}
             --destination=ghcr.io/${{ github.repository }}/${{ inputs.image || env.IMAGE }}:latest
           file: ${{ inputs.dockerfile || env.DOCKERFILE }}
