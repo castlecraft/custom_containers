@@ -67,9 +67,6 @@ jobs:
       - uses: int128/kaniko-action@v1
         with:
           push: true
-          tags: |
-            ghcr.io/${{ github.repository }}/${{ inputs.image || env.IMAGE }}:${{ inputs.version || env.VERSION }},
-            ghcr.io/${{ github.repository }}/${{ inputs.image || env.IMAGE }}:latest
           cache: true
           build-args: |
             FRAPPE_PATH=${{ inputs.frappe-repo || env.FRAPPE_REPO }},
@@ -78,5 +75,7 @@ jobs:
             NODE_VERSION=${{ inputs.nodejs-version || env.NODEJS_VERSION }},
             APPS_JSON_BASE64=${{ inputs.apps-json-base64 || env.APPS_JSON_BASE64 }},
           kaniko-args: |
-            --context=${{ inputs.context || env.CONTEXT }}
+            --context=${{ inputs.context || env.CONTEXT }},
+            --destination=ghcr.io/${{ github.repository }}/${{ inputs.image || env.IMAGE }}:${{ inputs.version || env.VERSION }},
+            --destination=ghcr.io/${{ github.repository }}/${{ inputs.image || env.IMAGE }}:latest
           file: ${{ inputs.dockerfile || env.DOCKERFILE }}
