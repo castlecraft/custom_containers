@@ -1,0 +1,35 @@
+stages:
+  - build
+
+build_version:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  only:
+    refs:
+      - main
+  script:
+    - |
+      source ./ci/build.env
+      mkdir -p /kaniko/.docker
+      export IMAGE_NAME=${CI_REGISTRY:-${REGISTRY}}/${CI_PROJECT_NAMESPACE:-${PROJECT_NAMESPACE}}/${IMAGE_NAME:-${IMAGE}}
+      export BASIC_AUTH=$(echo -n ${CI_REGISTRY_USER}:${CI_JOB_TOKEN} | base64)
+      echo "{
+        \"auths\": {
+          \"${CI_REGISTRY:-${REGISTRY}}\":{
+            \"auth\": \"${BASIC_AUTH}\"
+            }
+          }
+        }" > /kaniko/.docker/config.json
+      /kaniko/executor \
+        --dockerfile=${CONTAINERFILE:-${DOCKERFILE}} \
+        --context=${BUILD_CONTEXT:-${CONTEXT}} \
+        --build-arg=FRAPPE_PATH=${FRAPPE_PATH:-${FRAPPE_REPO}} \
+        --build-arg=FRAPPE_BRANCH=${FRAPPE_BRANCH:-${FRAPPE_VERSION}} \
+        --build-arg=PYTHON_VERSION=${PYTHON_VERSION:-${PY_VERSION}} \
+        --build-arg=NODE_VERSION=${NODE_VERSION:-${NODEJS_VERSION}} \
+        --build-arg=APPS_JSON_BASE64=${APPS_JSON_BASE64:-$(base64 -w 0 ./ci/apps.json)} \
+        --destination=${IMAGE_NAME}:${VERSION:-$(cat ./ci/version.txt)} \
+        --destination=${IMAGE_NAME}:latest \
+        --cache=true
