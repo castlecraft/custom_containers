@@ -52,7 +52,93 @@ helm upgrade --install -n nfs in-cluster nfs-ganesha-server-and-external-provisi
 Notes:
 
 - Change the persistence.size from 8Gi to required specification.
-- In case of in-cluster nfs server that runs in production make sure you setup a backup CronJob refer: https://gist.github.com/revant/2414cedce8e19d209d5d337ea19efabc
+- In case of in-cluster nfs server that runs in production make sure you setup a backup CronJob refer
+
+<details>
+
+<summary>cronjob.yaml</summary>
+
+```yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ${CRONJOB_NAME}
+  namespace: ${CRONJOB_NAMESPACE}
+spec:
+  schedule: "0 */12 * * *"
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          securityContext:
+            supplementalGroups: [1000]
+          containers:
+          - name: backup-and-push
+            image: ${IMAGE}:${VERSION}
+            command: ["bash", "-c"]
+            args:
+              - |
+                bench --site all backup
+                restic snapshots || restic init
+                restic backup sites
+                restic forget --keep-last 30 --prune
+            imagePullPolicy: IfNotPresent
+            volumeMounts:
+              - name: sites-dir
+                mountPath: /home/frappe/frappe-bench/sites
+            env:
+              - name: RESTIC_REPOSITORY
+                value: ${RESTIC_REPOSITORY}
+              - name: "RESTIC_PASSWORD"
+                valueFrom:
+                  secretKeyRef:
+                    key: resticPassword
+                    name: ${CRONJOB_NAME}
+              - name: "AWS_ACCESS_KEY_ID"
+                valueFrom:
+                  secretKeyRef:
+                    key: accessKey
+                    name: ${CRONJOB_NAME}
+              - name: "AWS_SECRET_ACCESS_KEY"
+                valueFrom:
+                  secretKeyRef:
+                    key: secretKey
+                    name: ${CRONJOB_NAME}
+          restartPolicy: OnFailure
+          volumes:
+            - name: sites-dir
+              persistentVolumeClaim:
+                claimName: erpnext-v14
+                readOnly: false
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ${CRONJOB_NAME}
+  namespace: ${CRONJOB_NAMESPACE}
+type: Opaque
+stringData:
+  resticPassword: ${RESTIC_PASSWORD}
+  accessKey: ${AWS_ACCESS_KEY_ID}
+  secretKey: ${AWS_SECRET_ACCESS_KEY}
+```
+
+Create `CronJob`
+
+```shell
+export CRONJOB_NAME=erpnext-backup
+export CRONJOB_NAMESPACE=erpnext
+export IMAGE=frappe/erpnext
+export VERSION=v14
+export RESTIC_REPOSITORY=s3:https://s3.endpoint.com/bucket-name/path-in-bucket
+export RESTIC_PASSWORD=password
+export AWS_ACCESS_KEY_ID=changeit
+export AWS_SECRET_ACCESS_KEY=secret
+cat cronjob.yaml | envsubst | kubectl apply -f -
+```
+
+</details>
 
 ### Provision Database
 

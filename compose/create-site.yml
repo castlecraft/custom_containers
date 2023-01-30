@@ -9,7 +9,6 @@ services:
       - bench
       - new-site
       - --no-mariadb-socket
-      - --install-app=payments
       - --install-app=erpnext
       - --db-root-password=admin
       - --admin-password=admin
