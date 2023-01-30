@@ -1,0 +1,10 @@
+version: "3.7"
+
+services:
+  hugo:
+    build: .
+    command: ["tail", "-f", "/dev/null"]
+    volumes:
+      - ..:/workspace
+      - ${HOME}/.ssh:/home/hugo/.ssh
+    working_dir: /workspace
