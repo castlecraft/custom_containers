@@ -14,18 +14,12 @@ services:
     entrypoint: ["bash", "-c"]
     command:
       - |
-        bench backup-all-sites
-
-        ## Uncomment for restic snapshots
+        bench --site all backup
+        ## Uncomment for restic snapshots.
         # restic snapshots || restic init
         # restic backup sites
-
-        ## Uncomment to delete last snapshot number more than 10
-        # SNAPSHOT_COUNT=`restic -q list snapshots | wc -l`; export SNAPSHOT_COUNT
-        # if [[ $$SNAPSHOT_COUNT -gt 10 ]]; then
-        #   restic forget `restic -q list snapshots | tail -1`
-        #   restic prune
-        # fi
+        ## Uncomment to keep only last 30 snapshots.
+        # restic forget --group-by=paths --keep-last=30 --prune
     environment:
       - RESTIC_REPOSITORY=s3:https://s3.endpoint.com/restic
       - AWS_ACCESS_KEY_ID=access_key

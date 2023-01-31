@@ -82,7 +82,7 @@ spec:
                 bench --site all backup
                 restic snapshots || restic init
                 restic backup sites
-                restic forget --keep-last 30 --prune
+                restic forget --group-by=paths --keep-last=30 --prune
             imagePullPolicy: IfNotPresent
             volumeMounts:
               - name: sites-dir
@@ -123,6 +123,8 @@ stringData:
   accessKey: ${AWS_ACCESS_KEY_ID}
   secretKey: ${AWS_SECRET_ACCESS_KEY}
 ```
+
+Note: Change the number of restic snapshots to keep as per need.
 
 Create `CronJob`
 
@@ -254,7 +256,7 @@ curl -X POST -u admin:changeit http://0.0.0.0:3000/bench-command \
   "command": null,
   "logs_pvc": null,
   "namespace": "erpnext",
-  "worker_image": "frappe/erpnext:v14.13.0",
+  "image": "frappe/erpnext:v14.13.0",
   "annotations": {
     "k8s-bench.castlecraft.in/job-type": "create-site",
     "k8s-bench.castlecraft.in/ingress-name": "frappe-localhost",
@@ -289,7 +291,7 @@ curl -X POST -u admin:changeit http://0.0.0.0:3000/bench-command \
   "command": null,
   "logs_pvc": null,
   "namespace": "erpnext",
-  "worker_image": "frappe/erpnext:v14.13.0",
+  "image": "frappe/erpnext:v14.13.0",
   "annotations": {
     "k8s-bench.castlecraft.in/job-type": "delete-site",
     "k8s-bench.castlecraft.in/ingress-name": "frappe-localhost",
