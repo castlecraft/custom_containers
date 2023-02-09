@@ -147,49 +147,19 @@ cat cronjob.yaml | envsubst | kubectl apply -f -
 In case of production setup use AWS RDS, Google Sky SQL, or Managed MariaDB Service that is configurable for frappe specific param group properties. For simple or development setup we will install in-cluster MariaDB Helm chart with following command:
 
 ```shell
-export FRAPPE_MARIADB_CNF=$(cat <<EOF
-[mysqld]
-character-set-client-handshake=FALSE
-character-set-server=utf8mb4
-collation-server=utf8mb4_unicode_ci
-skip-name-resolve
-explicit_defaults_for_timestamp
-basedir=/opt/bitnami/mariadb
-plugin_dir=/opt/bitnami/mariadb/plugin
-port=3306
-socket=/opt/bitnami/mariadb/tmp/mysql.sock
-tmpdir=/opt/bitnami/mariadb/tmp
-max_allowed_packet=16M
-bind-address=*
-pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
-log-error=/opt/bitnami/mariadb/logs/mysqld.log
-collation-server=utf8mb4_unicode_ci
-slow_query_log=0
-slow_query_log_file=/opt/bitnami/mariadb/logs/mysqld.log
-long_query_time=10.0
-[client]
-port=3306
-socket=/opt/bitnami/mariadb/tmp/mysql.sock
-default-character-set=utf8mb4
-plugin_dir=/opt/bitnami/mariadb/plugin
-[manager]
-port=3306
-socket=/opt/bitnami/mariadb/tmp/mysql.sock
-pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
-EOF
-)
-
-kubectl create namespace mariadb
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install mariadb -n mariadb bitnami/mariadb \
-  --set architecture=standalone \
-  --set auth.rootPassword=admin \
-  --set auth.database=my_database \
-  --set auth.username=my_database \
-  --set auth.password=admin \
-  --set auth.replicationUser=replicator \
-  --set auth.replicationPassword=admin \
-  --set primary.configuration=$FRAPPE_MARIADB_CNF
+helm repo update bitnami
+helm upgrade \
+  --wait \
+  --create-namespace \
+  --install mariadb \
+  --namespace mariadb \
+  --set primary.extraFlags="--skip-character-set-client-handshake --skip-innodb-read-only-compressed --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci" \
+  --set auth.rootPassword=changeit \
+  --set auth.username=dbadmin \
+  --set auth.password=changeit \
+  --set auth.replicationPassword=changeit \
+  bitnami/mariadb
 ```
 
 ### Setup ERPNext
