@@ -14,5 +14,10 @@
   {
     "url": "https://github.com/frappe/lms.git",
     "branch": "main"
+  },
+  {
+    "url": "https://github.com/resilient-tech/india-compliance.git",
+    "branch": "version-14"
   }
+  
 ]
