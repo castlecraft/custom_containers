@@ -27,12 +27,12 @@ services:
   #   volumes:
   #     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
   #   ports:
-  #     - "8080:8080"
+  #     - "9090:9090"
   #   environment:
   #     MODE: tcp
   #     XPRA_HTML: "yes"
   #     DISPLAY: ":14"
-  #     XPRA_TCP_PORT: "8080"
+  #     XPRA_TCP_PORT: "9090"
   #     # This password can be anything you want.
   #     XPRA_PASSWORD: admin
 
@@ -59,7 +59,7 @@ services:
   #     - 3143:3143
   #     - 3465:3465
   #     - 3993:3993
-  #     - 8800:8080
+  #     - 8080:8080
 
   # # Enable PostgreSQL only if you use it, see development/README.md for more information.
   # postgresql:

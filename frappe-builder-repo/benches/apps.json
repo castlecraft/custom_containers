@@ -1,0 +1,6 @@
+[
+  {
+    "url": "https://{{ env['REPO_PAT'] + '@' if env['REPO_PAT'] else '' }}github.com/castlecraft/cfe",
+    "branch": "main"
+  }
+]

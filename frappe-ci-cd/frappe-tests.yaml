@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  mariadb:
+    image: bitnami/mariadb:10.6
+    environment:
+      MARIADB_CHARACTER_SET: utf8mb4
+      MARIADB_COLLATE: utf8mb4_unicode_ci
+      MARIADB_ROOT_PASSWORD: admin
+      MARIADB_EXTRA_FLAGS: --skip-character-set-client-handshake --skip-innodb-read-only-compressed
+
+  redis-cache:
+    image: redis:7-alpine
+
+  redis-queue:
+    image: redis:7-alpine
+
+  redis-socketio:
+    image: redis:7-alpine
+
+  tests:
+    image: frappe/bench:latest
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        sudo chmod 666 /etc/hosts
+        sudo echo '127.0.0.1 test.localhost' >> /etc/hosts
+        sudo chmod 644 /etc/hosts
+        sudo apt-get update && sudo apt-get install -y wait-for-it jq libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
+        sudo apt install -y /tmp/chrome.deb && rm /tmp/chrome.deb
+        bench init --skip-redis-config-generation --frappe-branch version-14 frappe-bench
+        cd frappe-bench
+        bench set-config -g db_host mariadb
+        bench set-config -g redis_cache redis://redis-cache:6379
+        bench set-config -g redis_queue redis://redis-queue:6379
+        bench set-config -g redis_socketio redis://redis-socketio:6379
+        ## mount apps directly under /home/frappe/frappe-bench/apps
+        ## Or clone list of apps under /home/frappe/frappe-bench/apps
+        # git clone https://git.example.com/org/custom_masters /home/frappe/frappe-bench/apps/custom_masters
+        ## Run following to setup new apps under the existing bench environment
+        # bench setup requirements
+        bench new-site test.localhost --no-mariadb-socket --db-root-password=admin --admin-password=admin # --install-app=custom_app --install-app=custom_masters
+        # bench --site test.localhost custom_app.tests.create_mocks
+        bench start &
+        wait-for-it -t 120 test.localhost:8000
+        curl http://test.localhost:8000/api/method/version | jq .
+        # bench --site test.localhost run-tests --app custom_app
+        # bench --site test.localhost run-ui-tests --headless custom_app
+        kill %1
+
+    environment:
+      - SHELL=/bin/bash

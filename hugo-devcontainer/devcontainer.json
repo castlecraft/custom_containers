@@ -1,0 +1,11 @@
+{
+  "name": "Hugo Static Site and Caddy",
+  "remoteUser": "hugo",
+  "settings": {
+    "debug.node.autoAttach": "disabled"
+  },
+  "dockerComposeFile": "./compose.yml",
+  "service": "hugo",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose"
+}

@@ -1,0 +1,35 @@
+version: '3.7'
+
+services:
+  configurator:
+    image: frappe/erpnext:${VERSION:?No image version set}
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+    command:
+      - bench
+      - new-site
+      - --no-mariadb-socket
+      - --install-app=erpnext
+      - --db-root-password=admin
+      - --admin-password=admin
+      - erp.example.com
+    deploy:
+      restart_policy:
+        condition: none
+    networks:
+      - mariadb-network
+      - bench-network
+
+volumes:
+  sites:
+    external: true
+    # set to name of the sites volume
+    name: ${BENCH_NAME:-erpnext}_sites
+
+networks:
+  bench-network:
+    name: ${BENCH_NAME:-erpnext}
+    external: true
+  mariadb-network:
+    name: mariadb-network
+    external: true

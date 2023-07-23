@@ -1,0 +1,34 @@
+version: '3.7'
+
+services:
+  portainer:
+    image: portainer/portainer-ce:2.16.2
+    command: --tlsskipverify
+    volumes:
+      - portainer-data:/data
+    networks:
+      - traefik-public
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.portainer.portainer-data == true
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.portainer-http.rule=Host(`${PORTAINER_DOMAIN?Variable not set}`)
+        - traefik.http.routers.portainer-http.entrypoints=http
+        - traefik.http.routers.portainer-http.middlewares=https-redirect
+        - traefik.http.routers.portainer-https.rule=Host(`${PORTAINER_DOMAIN}`)
+        - traefik.http.routers.portainer-https.entrypoints=https
+        - traefik.http.routers.portainer-https.tls=true
+        - traefik.http.routers.portainer-https.tls.certresolver=le
+        - traefik.http.services.portainer.loadbalancer.server.port=9000
+
+networks:
+  traefik-public:
+    external: true
+
+volumes:
+  portainer-data:

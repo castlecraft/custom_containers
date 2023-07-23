@@ -22,11 +22,9 @@ echo "Set redis_socketio to redis://redis-socketio:6379"
 bench set-config -g redis_socketio redis://redis-socketio:6379
 
 # Create custom.localhost site
-echo "Create custom.localhost, install apps castlecraft, microsoft_integration"
+echo "Create http://custom.localhost:8000 site"
 bench new-site \
   --no-mariadb-socket \
   --db-root-password=123 \
   --admin-password=admin \
-  --install-app=castlecraft \
-  --install-app=microsoft_integration \
   custom.localhost

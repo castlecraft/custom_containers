@@ -1,0 +1,80 @@
+name: Build Image
+
+on:
+  push:
+    branches:
+      - build
+
+  workflow_dispatch:
+    inputs:
+      image:
+        description: Image name
+        type: string
+      version:
+        description: Image version tag
+        type: string
+      frappe-repo:
+        description: Frappe repo
+        type: string
+      frappe-version:
+        description: Frappe branch
+        type: string
+      py-version:
+        description: Python version
+        type: string
+      nodejs-version:
+        description: NodeJS version
+        type: string
+      apps-json-base64:
+        description: base64 encoded string of apps.json
+        type: string
+      context:
+        description: kaniko context
+        type: string
+      dockerfile:
+        description: dockerfile path from context
+        type: string
+      registry-user:
+        description: registry username
+        required: false
+
+    secrets:
+      REGISTRY_PASSWORD:
+        description: registry password
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Source Build Env
+        id: source-build-env
+        run: |
+          cat ./ci/build.env >> $GITHUB_ENV
+          echo "VERSION=$(cat ./ci/version.txt)" >> $GITHUB_ENV
+          echo "APPS_JSON_BASE64=$(base64 -w 0 ./ci/apps.json)" >> $GITHUB_ENV
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ inputs.registry || env.REGISTRY }}
+          username: ${{ inputs.registry-user || github.actor }}
+          password: ${{ secrets.REGISTRY_PASSWORD || secrets.GITHUB_TOKEN }}
+
+      - uses: int128/kaniko-action@v1
+        with:
+          push: true
+          cache: true
+          kaniko-args: |
+            --build-arg=FRAPPE_PATH=${{ inputs.frappe-repo || env.FRAPPE_REPO }}
+            --build-arg=FRAPPE_BRANCH=${{ inputs.frappe-version || env.FRAPPE_VERSION }}
+            --build-arg=PYTHON_VERSION=${{ inputs.py-version || env.PY_VERSION }}
+            --build-arg=NODE_VERSION=${{ inputs.nodejs-version || env.NODEJS_VERSION }}
+            --build-arg=APPS_JSON_BASE64=${{ inputs.apps-json-base64 || env.APPS_JSON_BASE64 }}
+            --context=${{ inputs.context || env.CONTEXT }}
+            --destination=ghcr.io/${{ github.repository }}/${{ inputs.image || env.IMAGE }}:${{ inputs.version || env.VERSION }}
+            --destination=ghcr.io/${{ github.repository }}/${{ inputs.image || env.IMAGE }}:latest
+          file: ${{ inputs.dockerfile || env.DOCKERFILE }}

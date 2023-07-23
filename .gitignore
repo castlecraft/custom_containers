@@ -1,4 +1,6 @@
+__pycache__
 .env
+env
 repos
 
 # VS Code devcontainer

@@ -1,0 +1,207 @@
+version: "3.7"
+
+services:
+  backend:
+    image: frappe/erpnext:${VERSION:?No image version set}
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - mariadb-network
+      - bench-network
+
+  frontend:
+    image: frappe/erpnext:${VERSION}
+    command:
+      - nginx-entrypoint.sh
+    deploy:
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.middlewares.prod-redirect.redirectscheme.scheme=https
+        # Change router name prefix from erpnext to the name of stack in case of multi bench setup
+        - traefik.http.routers.${BENCH_NAME:-erpnext}-http.rule=Host(${SITES:?No sites set})
+        - traefik.http.routers.${BENCH_NAME:-erpnext}-http.entrypoints=http
+        # Remove following lines in case of local setup
+        - traefik.http.routers.${BENCH_NAME:-erpnext}-http.middlewares=prod-redirect
+        - traefik.http.routers.${BENCH_NAME:-erpnext}-https.rule=Host(${SITES})
+        - traefik.http.routers.${BENCH_NAME:-erpnext}-https.entrypoints=https
+        - traefik.http.routers.${BENCH_NAME:-erpnext}-https.tls=true
+        - traefik.http.routers.${BENCH_NAME:-erpnext}-https.tls.certresolver=le
+        # Remove above lines in case of local setup
+        # Uncomment and change domain for non-www to www redirect
+        # - traefik.http.routers.${BENCH_NAME:-erpnext}-https.middlewares=nonwwwtowww
+        # - traefik.http.middlewares.nonwwwtowww.redirectregex.regex=^https?://(?:www\.)?(.*)
+        # - traefik.http.middlewares.nonwwwtowww.redirectregex.replacement=https://www.$$1
+        - traefik.http.services.${BENCH_NAME:-erpnext}.loadbalancer.server.port=8080
+    environment:
+      BACKEND: backend:8000
+      FRAPPE_SITE_NAME_HEADER: $$host
+      SOCKETIO: websocket:9000
+      UPSTREAM_REAL_IP_ADDRESS: 127.0.0.1
+      UPSTREAM_REAL_IP_HEADER: X-Forwarded-For
+      UPSTREAM_REAL_IP_RECURSIVE: "off"
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - bench-network
+      - traefik-public
+
+  queue-default:
+    image: frappe/erpnext:${VERSION}
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - bench
+      - worker
+      - --queue
+      - default
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - mariadb-network
+      - bench-network
+
+  queue-long:
+    image: frappe/erpnext:${VERSION}
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - bench
+      - worker
+      - --queue
+      - long
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - mariadb-network
+      - bench-network
+
+  queue-short:
+    image: frappe/erpnext:${VERSION}
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - bench
+      - worker
+      - --queue
+      - short
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - mariadb-network
+      - bench-network
+
+  scheduler:
+    image: frappe/erpnext:${VERSION}
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - bench
+      - schedule
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - mariadb-network
+      - bench-network
+
+  websocket:
+    image: frappe/erpnext:${VERSION}
+    command:
+      - node
+      - /home/frappe/frappe-bench/apps/frappe/socketio.js
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - mariadb-network
+      - bench-network
+
+  migration:
+    image: frappe/erpnext:${VERSION}
+    deploy:
+      restart_policy:
+        condition: none
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        bench --site all set-config -p maintenance_mode 1
+        bench --site all set-config -p pause_scheduler 1
+        bench --site all migrate
+        bench --site all set-config -p maintenance_mode 0
+        bench --site all set-config -p pause_scheduler 0
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - mariadb-network
+      - bench-network
+
+  redis-cache:
+    image: redis:6.2-alpine
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - redis-cache-data:/data
+    networks:
+      - bench-network
+
+  redis-queue:
+    image: redis:6.2-alpine
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - redis-queue-data:/data
+    networks:
+      - bench-network
+
+  redis-socketio:
+    image: redis:6.2-alpine
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - redis-socketio-data:/data
+    networks:
+      - bench-network
+
+volumes:
+  db-data:
+  redis-cache-data:
+  redis-queue-data:
+  redis-socketio-data:
+  sites:
+  logs:
+
+networks:
+  bench-network:
+    name: ${BENCH_NAME:-erpnext}
+    external: false
+  mariadb-network:
+    name: mariadb-network
+    external: true
+  traefik-public:
+    name: traefik-public
+    external: true
+
+# Note: set VERSION, BENCH_NAME and SITES

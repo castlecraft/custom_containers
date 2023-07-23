@@ -1,0 +1,54 @@
+version: "3.7"
+services:
+  backup-sites:
+    deploy:
+      mode: replicated
+      replicas: 0
+      labels:
+        - "swarm.cronjob.enable=true"
+        - "swarm.cronjob.schedule=0 */6 * * *"
+        - "swarm.cronjob.skip-running=false"
+      restart_policy:
+        condition: none
+    image: frappe/erpnext:${VERSION:?No image version set}
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        bench --site all backup
+        ## Uncomment for restic snapshots.
+        # restic snapshots || restic init
+        # restic backup sites
+        ## Uncomment to keep only last 30 snapshots.
+        # restic forget --group-by=paths --keep-last=30 --prune
+    environment:
+      - RESTIC_REPOSITORY=s3:https://s3.endpoint.com/restic
+      - AWS_ACCESS_KEY_ID=access_key
+      - AWS_SECRET_ACCESS_KEY=secret_access_key
+      - RESTIC_PASSWORD=secret_restic_password
+    volumes:
+      - "sites:/home/frappe/frappe-bench/sites"
+    networks:
+      - bench-network
+      - mariadb-network
+
+networks:
+  bench-network:
+    name: ${BENCH_NAME:-erpnext}
+    external: true
+  mariadb-network:
+    name: mariadb-network
+    external: true
+
+volumes:
+  sites:
+    external: true
+    # set to name of the sites volume
+    name: ${BENCH_NAME:-erpnext}_sites
+
+# Set following environment variables
+# VERSION
+# RESTIC_REPOSITORY
+# AWS_ACCESS_KEY_ID
+# AWS_SECRET_ACCESS_KEY
+# RESTIC_PASSWORD
+# BENCH_NAME

@@ -1,0 +1,63 @@
+version: "3.7"
+
+services:
+  mariadb:
+    image: bitnami/mariadb:10.6
+    environment:
+      MARIADB_CHARACTER_SET: utf8mb4
+      MARIADB_COLLATE: utf8mb4_unicode_ci
+      MARIADB_ROOT_PASSWORD: 123
+      MARIADB_EXTRA_FLAGS: --skip-character-set-client-handshake --skip-innodb-read-only-compressed
+    volumes:
+      - mariadb:/bitnami/mariadb
+    restart: unless-stopped
+
+  redis-cache:
+    image: redis:alpine
+
+  redis-queue:
+    image: redis:alpine
+
+  redis-socketio:
+    image: redis:alpine
+
+  frappe:
+    build: .
+    command: ["tail", "-f", "/dev/null"]
+    environment:
+      - SHELL=/bin/bash
+      - DOCKER_HOST=docker
+    volumes:
+      - ..:/workspace
+      - ${HOME}/.ssh:/home/frappe/.ssh
+    working_dir: /workspace/development
+    ports:
+      - 8000-8005:8000-8005
+      - 9000-9005:9000-9005
+    extra_hosts:
+      - custom.localhost:172.17.0.1
+
+  registry:
+    image: registry:2
+    volumes:
+      - registry:/var/lib/registry
+    environment:
+      - REGISTRY_STORAGE_DELETE_ENABLED=true
+
+  docker:
+    image: docker:20.10.16-dind
+    command:
+      - dockerd
+      - --host=0.0.0.0:2375
+      - --insecure-registry=registry:5000
+    privileged: true
+    volumes:
+      - docker:/var/lib/docker
+    ports:
+      - 443:443
+      - 80:80
+
+volumes:
+  mariadb:
+  registry:
+  docker:
