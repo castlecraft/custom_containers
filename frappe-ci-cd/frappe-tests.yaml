@@ -44,7 +44,7 @@ services:
         # bench --site test.localhost custom_app.tests.create_mocks
         bench start &
         wait-for-it -t 120 test.localhost:8000
-        curl http://test.localhost:8000/api/method/version | jq .
+        curl http://test.localhost:8000/api/method/ping | jq .
         # bench --site test.localhost run-tests --app custom_app
         # bench --site test.localhost run-ui-tests --headless custom_app
         kill %1
