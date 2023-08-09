@@ -43,7 +43,7 @@ services:
       - server
       - --tls-san=k3s
       - --private-registry=/opt/custom/registries.yaml
-      - --no-deploy=traefik
+      - --disable=traefik
     volumes:
       - ./registries.yaml:/opt/custom/registries.yaml
       - k3s:/var/lib/rancher/k3s

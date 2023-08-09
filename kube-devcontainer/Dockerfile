@@ -11,6 +11,12 @@ RUN sudo curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/rele
     mkdir -p /home/frappe/.kube && \
     sudo chmod +x /entrypoint.sh
 
+RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.5/zsh-in-docker.sh)" -- \
+    -p git \
+    -p kubectl \
+    -p https://github.com/zsh-users/zsh-autosuggestions \
+    -p https://github.com/zsh-users/zsh-completions
+
 ENV DOCKER_HOST=docker
 ENV KUBECONFIG=/home/frappe/.kube/config
 
