@@ -1,0 +1,47 @@
+# name: pre-dev-bench
+
+version: "3.7"
+
+services:
+  mariadb:
+    image: bitnami/mariadb:10.6
+    restart: always
+    environment:
+      MARIADB_CHARACTER_SET: utf8mb4
+      MARIADB_COLLATE: utf8mb4_unicode_ci
+      MARIADB_ROOT_PASSWORD: 123
+      MARIADB_EXTRA_FLAGS: --skip-character-set-client-handshake --skip-innodb-read-only-compressed
+    volumes:
+      - mariadb-data:/bitnami/mariadb
+
+  redis-cache:
+    restart: always
+    image: redis:7-alpine
+
+  redis-queue:
+    restart: always
+    image: redis:7-alpine
+
+  redis-socketio:
+    restart: always
+    image: redis:7-alpine
+
+  frappe:
+    image: frappe/bench:latest
+    working_dir: /home/frappe/benches
+    restart: always
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        cd /home/frappe/benches/frappe-bench
+        bench start
+    environment:
+      - SHELL=/bin/bash
+    volumes:
+      - /opt/benches:/home/frappe/benches
+    ports:
+      - 8000-8005:8000-8005
+      - 9000-9005:9000-9005
+
+volumes:
+  mariadb-data:
