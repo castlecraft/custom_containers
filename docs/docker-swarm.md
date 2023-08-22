@@ -31,11 +31,11 @@ dpkg-reconfigure --priority=medium unattended-upgrades
 Add non-root sudo user
 
 ```shell
-adduser -D craft
-usermod -aG sudo craft
+adduser -D ubuntu
+usermod -aG sudo ubuntu
 curl -fsSL https://get.docker.com | bash
-usermod -aG docker craft
-su - craft
+usermod -aG docker ubuntu
+su - ubuntu
 ```
 
 ### Setup Docker Swarm

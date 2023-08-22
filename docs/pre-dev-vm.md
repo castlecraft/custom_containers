@@ -22,3 +22,14 @@ docker run --rm -it \
 ## Restart pre-dev-bench-frappe
 
 Stacks > Select "pre-dev-bench" > Select service "pre-dev-bench-frappe-1" > Restart
+
+## Use VS Code Devcontainer with VS Code Remote SSH Extension
+
+- Create a VM for development and configure SSH access with passwordless key.
+- [Install docker](docker-swarm.md#install-prerequisites)
+- Open Remote, and clone https://github.com/frappe/frappe_docker at location `/home/ubuntu/frappe_docker`
+- Open remote directory in VS Code
+- Copy `devcontainer-example` to `.devcontainer` directory.
+- Reopen in Devcontainer.
+
+Above steps can use remote machine as docker host for devcontainer setup.
