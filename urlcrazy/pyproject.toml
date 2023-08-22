@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "urlcrazy"
+version = "1.0.0"
+authors = [
+  { name="Castlecraft Ecommerce Pvt. Ltd.", email="support@castlecraft.in" },
+]
+description = "FastAPI for urlcrazy"
+requires-python = ">=3.7"
+dependencies = [
+  "fastapi==0.95.0",
+  "uvicorn==0.21.1",
+]

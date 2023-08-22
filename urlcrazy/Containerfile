@@ -1,0 +1,25 @@
+FROM kalilinux/kali-last-release
+
+RUN useradd -ms /bin/bash kali \
+  && apt-get update \
+  && apt-get install --no-install-recommends -y \
+  urlcrazy \
+  python3 \
+  python3-venv \
+  && rm -rf /var/lib/apt/lists/* \
+  && mkdir -p /opt/urlcrazy \
+  && chown -R kali:kali /opt/urlcrazy
+
+COPY --chown=kali:kali main.py /opt/urlcrazy/main.py
+COPY --chown=kali:kali pyproject.toml /opt/urlcrazy/pyproject.toml
+
+USER kali
+
+WORKDIR /opt/urlcrazy
+
+RUN python3 -m venv env \
+  && env/bin/pip install --no-cache-dir -U pip .
+
+ENV PATH="/opt/urlcrazy/env/bin:$PATH"
+
+CMD [ "uvicorn", "--host", "0.0.0.0", "--port", "4000", "main:app" ]
