@@ -33,3 +33,5 @@ Stacks > Select "pre-dev-bench" > Select service "pre-dev-bench-frappe-1" > Rest
 - Reopen in Devcontainer.
 
 Above steps can use remote machine as docker host for devcontainer setup.
+
+More about the setup: https://code.visualstudio.com/remote/advancedcontainers/develop-remote-host#_connect-using-the-remote-ssh-extension-recommended
