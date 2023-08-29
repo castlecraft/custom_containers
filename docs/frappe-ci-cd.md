@@ -14,7 +14,7 @@ Place example file `frappe-ci-cd/.pre-commit-config.yaml` at root of your repo.
 
 Make changes to config file as per need.
 
-Current pre-commit config also requires `package.json`, `.eslintrc.js` and `.prettierrc`. `package.json` will install eslint and prettier in the environment for code checks. Respective rc files configure the checks. All example files are available under `frappe-ci-cd` directory.
+Current pre-commit requires `.eslintrc.js` and `.prettierrc` files to configure the checks. All example files are available under `frappe-ci-cd` directory.
 
 Following example for `python:3-alpine` image used in CI task. Working directory is your root of your app repo.
 
