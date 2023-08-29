@@ -3,7 +3,7 @@ ARG DEBIAN_BASE=bookworm
 FROM python:${PYTHON_VERSION}-slim-${DEBIAN_BASE} AS base
 
 COPY resources/nginx-template.conf /templates/nginx/frappe.conf.template
-COPY resources/nginx-entrypoint.sh /usr/local/bin/nginx-entrypoint.sh
+COPY resources/*.sh /usr/local/bin/
 
 ARG WKHTMLTOPDF_VERSION=0.12.6.1-3
 ARG WKHTMLTOPDF_DISTRO=bookworm
@@ -66,7 +66,7 @@ RUN useradd -ms /bin/bash frappe \
     && chown -R frappe:frappe /var/log/nginx \
     && chown -R frappe:frappe /var/lib/nginx \
     && chown -R frappe:frappe /run/nginx.pid \
-    && chmod 755 /usr/local/bin/nginx-entrypoint.sh \
+    && chmod 755 /usr/local/bin/*.sh \
     && chmod 644 /templates/nginx/frappe.conf.template
 
 FROM base AS builder
@@ -118,7 +118,14 @@ RUN export APP_INSTALL_ARGS="" && \
     --verbose \
     /home/frappe/frappe-bench && \
   cd /home/frappe/frappe-bench && \
-  echo "{}" > sites/common_site_config.json && \
+  echo "{}" > sites/common_site_config.json
+
+# Uncomment following if you plan to clone
+# repos before build and copy them into image
+# COPY --chown=frappe:frappe repos /home/frappe/frappe-bench/apps
+
+RUN cd /home/frappe/frappe-bench && \
+  bench setup requirements && bench build --production && \
   find apps -mindepth 1 -path "*/.git" | xargs rm -fr
 
 FROM base as backend
@@ -127,6 +134,9 @@ USER frappe
 
 COPY --from=builder --chown=frappe:frappe /home/frappe/frappe-bench /home/frappe/frappe-bench
 
+# Uncomment in case of CRI-O image volumes
+# COPY --from=builder --chown=frappe:frappe /home/frappe/frappe-bench/sites/assets /opt/frappe/assets
+
 WORKDIR /home/frappe/frappe-bench
 
 VOLUME [ \
@@ -134,6 +144,9 @@ VOLUME [ \
   "/home/frappe/frappe-bench/sites/assets", \
   "/home/frappe/frappe-bench/logs" \
 ]
+
+# Uncomment in case of CRI-O image volumes
+# ENTRYPOINT [ "entrypoint.sh" ]
 
 CMD [ \
   "/home/frappe/frappe-bench/env/bin/gunicorn", \
