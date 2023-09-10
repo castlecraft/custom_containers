@@ -11,7 +11,9 @@ find apps -type d -name public | while read -r line; do
   app_name=$(echo "${line}" | awk -F / '{print $3}')
   assets_source=${PWD}/${line}
   assets_dest=${PWD}/sites/assets/${app_name}
-  ln -sf "${assets_source}" "${assets_dest}";
+
+  # Create symlink if not found
+  [ -L "${assets_dest}" ] || ln -sf "${assets_source}" "${assets_dest}";
 done
 
 exec "$@"
