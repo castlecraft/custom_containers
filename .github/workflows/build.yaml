@@ -58,7 +58,7 @@ jobs:
           echo "APPS_JSON_BASE64=$(base64 -w 0 ./ci/apps.json)" >> $GITHUB_ENV
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ inputs.registry || env.REGISTRY }}
           username: ${{ inputs.registry-user || github.actor }}
