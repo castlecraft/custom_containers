@@ -1,4 +1,4 @@
-## Start portainer
+# Use portainer and code-server
 
 ```shell
 docker compose -p portainer -f pre-dev-vm/portainer.yml up -d
@@ -19,11 +19,15 @@ docker run --rm -it \
   bash -c "sudo chown -R frappe:frappe . && wget https://raw.githubusercontent.com/frappe/frappe_docker/main/development/installer.py && chmod +x installer.py && echo '[]' > apps-example.json && ./installer.py"
 ```
 
+## Open VS Code in browser
+
+Open `http://vm-ip-addr:8443` in browser to access VS Code through code-server.
+
 ## Restart pre-dev-bench-frappe
 
 Stacks > Select "pre-dev-bench" > Select service "pre-dev-bench-frappe-1" > Restart
 
-## Use VS Code Devcontainer with VS Code Remote SSH Extension
+# Use VS Code Devcontainer with VS Code Remote SSH Extension
 
 - Create a VM for development and configure SSH access with passwordless key.
 - [Install docker](docker-swarm.md#install-prerequisites)

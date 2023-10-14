@@ -43,5 +43,19 @@ services:
       - 8000-8005:8000-8005
       - 9000-9005:9000-9005
 
+  code-server:
+    image: lscr.io/linuxserver/code-server:latest
+    container_name: code-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+      - PASSWORD=changeit
+      - DEFAULT_WORKSPACE=/workspace/development
+    volumes:
+      - ..:/workspace
+    ports:
+      - 8443:8443
+
 volumes:
   mariadb-data:
