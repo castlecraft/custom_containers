@@ -5,23 +5,8 @@
   },
   {
     "url": "https://github.com/frappe/payments.git",
-    "branch": "develop"
-  }, 
-  {
-    "url": "https://github.com/frappe/hrms.git",
     "branch": "version-14"
-  },
-  {
-    "url": "https://github.com/frappe/lms.git",
-    "branch": "main"
-  },
-  {
-    "url": "https://github.com/resilient-tech/india-compliance.git",
-    "branch": "version-14"
-  },
-  {
-    "url": "https://github.com/frappe/helpdesk.git",
-    "branch": "main"
   }
+  
   
 ]
