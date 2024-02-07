@@ -4,6 +4,7 @@ import json
 import os
 import re
 import sys
+from importlib.machinery import SourceFileLoader
 
 SKIP_APPS = [
     "frappe",
@@ -62,17 +63,28 @@ def main():
         app_name = app.get("name")
         app_tag = app.get("tag")
         if app_name in bench_apps and app_name not in SKIP_APPS:
-            print(f"patching __version__ for {app_name} to {app_tag}")
-            with open(
-                f"{args.apps_path}/{app_name}/{app_name}/__init__.py", "r+"
-            ) as f:  # noqa: E501
-                content = f.read()
-                content = re.sub(
-                    r"__version__ = .*", f'__version__ = "{app_tag}"', content
+            init_file_path = (
+                f"{args.apps_path}/{app_name}/{app_name}/__init__.py"  # noqa: E501
+            )
+            init_version = SourceFileLoader(
+                "init_version", init_file_path
+            ).load_module()
+            if app_tag != init_version.__version__:
+                print(f"patching __version__ for {app_name} to {app_tag}")
+                with open(init_file_path, "r+") as f:  # noqa: E501
+                    content = f.read()
+                    content = re.sub(
+                        r"__version__ = .*",
+                        f'__version__ = "{app_tag}"',
+                        content,  # noqa: E501
+                    )
+                    f.seek(0)
+                    f.truncate()
+                    f.write(content)
+            else:
+                print(
+                    f"Skip patching __version__ for {app_name} to app_tag: {app_tag} as it matches with init_version: {init_version.__version__}"  # noqa: E501
                 )
-                f.seek(0)
-                f.truncate()
-                f.write(content)
 
 
 if __name__ == "__main__":
