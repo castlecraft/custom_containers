@@ -10,7 +10,7 @@ cp -f /opt/frappe/assets/*.json "/home/frappe/frappe-bench/sites/assets/" 2>/dev
 # Symlink public directories of app(s) to assets
 find /home/frappe/frappe-bench/apps -type d -name public | while read -r line; do
   app_name=$(echo "${line}" | awk -F / '{print $(NF-1)}')
-  assets_source=/home/frappe/frappe-bench/${line}
+  assets_source=${line}
   assets_dest=/home/frappe/frappe-bench/sites/assets/${app_name}
   # Create link if not found
   [ -L "${assets_dest}" ] || ln -sf "${assets_source}" "${assets_dest}";
