@@ -4,12 +4,14 @@ FROM python:${PYTHON_VERSION}-slim-${DEBIAN_BASE} AS base
 
 COPY resources/nginx-template.conf /templates/nginx/frappe.conf.template
 COPY resources/*.sh /usr/local/bin/
+ADD https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases/download/webserver%2Fv1.0.4/opentelemetry-webserver-sdk-x64-linux.tgz /opt
 
 ARG WKHTMLTOPDF_VERSION=0.12.6.1-3
 ARG WKHTMLTOPDF_DISTRO=bookworm
 ARG NODE_VERSION=18.16.1
 ENV NVM_DIR=/home/frappe/.nvm
 ENV PATH ${NVM_DIR}/versions/node/v${NODE_VERSION}/bin/:${PATH}
+ENV LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib
 
 RUN useradd -ms /bin/bash frappe \
     && apt-get update \
@@ -17,7 +19,11 @@ RUN useradd -ms /bin/bash frappe \
     curl \
     git \
     vim \
-    nginx \
+    # nginx
+    gnupg2 \
+    ca-certificates \
+    lsb-release \
+    debian-archive-keyring \
     gettext-base \
     # weasyprint dependencies
     libpango-1.0-0 \
@@ -34,6 +40,10 @@ RUN useradd -ms /bin/bash frappe \
     # For healthcheck
     wait-for-it \
     jq \
+    # Nginx 1.24
+    && curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
+    && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" | tee /etc/apt/sources.list.d/nginx.list \
+    && apt update && apt -y install nginx=1.25.3-1~bookworm \
     # NodeJS
     && mkdir -p ${NVM_DIR} \
     && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash \
@@ -64,10 +74,14 @@ RUN useradd -ms /bin/bash frappe \
     && chown -R frappe:frappe /etc/nginx/conf.d \
     && chown -R frappe:frappe /etc/nginx/nginx.conf \
     && chown -R frappe:frappe /var/log/nginx \
-    && chown -R frappe:frappe /var/lib/nginx \
+    && chown -R frappe:frappe /var/cache/nginx \
     && chown -R frappe:frappe /run/nginx.pid \
     && chmod 755 /usr/local/bin/*.sh \
-    && chmod 644 /templates/nginx/frappe.conf.template
+    && chmod 644 /templates/nginx/frappe.conf.template \
+    # Install nginx opentelemetry module
+    && cd /opt; gunzip opentelemetry-webserver-sdk-x64-linux.tgz; tar xvfz opentelemetry-webserver-sdk-x64-linux.tar; rm opentelemetry-webserver-sdk-x64-linux.tar \
+    && cd /opt/opentelemetry-webserver-sdk; ./install.sh \
+    && echo "load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/1.25.3/ngx_http_opentelemetry_module.so;\n$(cat /etc/nginx/nginx.conf)" > /etc/nginx/nginx.conf
 
 FROM base AS builder
 
@@ -125,7 +139,8 @@ RUN export APP_INSTALL_ARGS="" && \
 # COPY --chown=frappe:frappe repos /home/frappe/frappe-bench/apps
 
 RUN cd /home/frappe/frappe-bench && \
-  bench setup requirements && bench build --production && \
+  # Uncomment following if you plan to clone repo(s) as app(s)
+  # bench setup requirements && bench build --production && \
   find apps -mindepth 1 -path "*/.git" | xargs rm -fr
 
 FROM base as backend

@@ -112,10 +112,10 @@ source ./common.env
 export REPO_PAT=revant
 export APPS_JSON_BASE64=$(python generate_apps_json.py -t apps.json | base64 -w 0)
 docker build \
-  --build-arg=FRAPPE_PATH=https://github.com/frappe/frappe \
-  --build-arg=FRAPPE_BRANCH=version-14 \
-  --build-arg=PYTHON_VERSION=3.11.4 \
-  --build-arg=NODE_VERSION=16.20.1 \
+  --build-arg=FRAPPE_PATH=${FRAPPE_PATH} \
+  --build-arg=FRAPPE_BRANCH=${FRAPPE_BRANCH} \
+  --build-arg=PYTHON_VERSION=${PYTHON_VERSION} \
+  --build-arg=NODE_VERSION=${NODE_VERSION} \
   --build-arg=APPS_JSON_BASE64=$APPS_JSON_BASE64 \
   --tag=ghcr.io/org/repo/image:1.0.0 \
   --file=Containerfile .
