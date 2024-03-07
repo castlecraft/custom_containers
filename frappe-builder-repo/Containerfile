@@ -80,8 +80,7 @@ RUN useradd -ms /bin/bash frappe \
     && chmod 644 /templates/nginx/frappe.conf.template \
     # Install nginx opentelemetry module
     && cd /opt; gunzip opentelemetry-webserver-sdk-x64-linux.tgz; tar xvfz opentelemetry-webserver-sdk-x64-linux.tar; rm opentelemetry-webserver-sdk-x64-linux.tar \
-    && cd /opt/opentelemetry-webserver-sdk; ./install.sh \
-    && echo "load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/1.25.3/ngx_http_opentelemetry_module.so;\n$(cat /etc/nginx/nginx.conf)" > /etc/nginx/nginx.conf
+    && cd /opt/opentelemetry-webserver-sdk; ./install.sh
 
 FROM base AS builder
 

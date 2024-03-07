@@ -49,4 +49,8 @@ envsubst '${BACKEND}
 	${CLIENT_MAX_BODY_SIZE}' \
   </templates/nginx/frappe.conf.template >/etc/nginx/conf.d/frappe.conf
 
+if [[ -n "$ENABLE_OPENTELEMETRY" ]]; then
+  echo -e "load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/1.25.3/ngx_http_opentelemetry_module.so;\n$(cat /etc/nginx/nginx.conf)" > /etc/nginx/nginx.conf
+fi
+
 nginx -g 'daemon off;'

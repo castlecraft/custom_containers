@@ -3,9 +3,27 @@ version: "3"
 services:
   backend:
     image: ghcr.io/org/repo/image:1.0.0
+    command:
+      - /home/frappe/frappe-bench/env/bin/opentelemetry-instrument
+      - /home/frappe/frappe-bench/env/bin/gunicorn
+      - --chdir=/home/frappe/frappe-bench/sites
+      - --bind=0.0.0.0:8000
+      - --threads=4
+      - --workers=2
+      - --worker-class=gthread
+      - --worker-tmp-dir=/dev/shm
+      - --timeout=120
+      - --preload
+      - frappe_utils.app:application
     deploy:
       restart_policy:
         condition: on-failure
+    environment:
+      - OTEL_SERVICE_NAME=backend
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
+      - OTEL_EXPORTER_OTLP_INSECURE=true
+      - OTEL_OTLP_TRACES_PROTOCOL=grpc
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
@@ -29,11 +47,11 @@ services:
         bench set-config -g redis_socketio "redis://$$REDIS_QUEUE";
         bench set-config -gp socketio_port $$SOCKETIO_PORT;
     environment:
-      DB_HOST: db
-      DB_PORT: "3306"
-      REDIS_CACHE: redis-cache:6379
-      REDIS_QUEUE: redis-queue:6379
-      SOCKETIO_PORT: "9000"
+      - DB_HOST=db
+      - DB_PORT=3306
+      - REDIS_CACHE=redis-cache:6379
+      - REDIS_QUEUE=redis-queue:6379
+      - SOCKETIO_PORT="9000"
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
@@ -98,18 +116,19 @@ services:
     command:
       - nginx-entrypoint.sh
     environment:
-      BACKEND: backend:8000
-      FRAPPE_SITE_NAME_HEADER: frontend
-      SOCKETIO: websocket:9000
-      UPSTREAM_REAL_IP_ADDRESS: 127.0.0.1
-      UPSTREAM_REAL_IP_HEADER: X-Forwarded-For
-      UPSTREAM_REAL_IP_RECURSIVE: "off"
-      PROXY_READ_TIMEOUT: 120
-      CLIENT_MAX_BODY_SIZE: 50m
+      - BACKEND=backend:8000
+      - FRAPPE_SITE_NAME_HEADER=frontend
+      - SOCKETIO=websocket:9000
+      - UPSTREAM_REAL_IP_ADDRESS=127.0.0.1
+      - UPSTREAM_REAL_IP_HEADER=X-Forwarded-For
+      - UPSTREAM_REAL_IP_RECURSIVE="off"
+      - PROXY_READ_TIMEOUT=120
+      - CLIENT_MAX_BODY_SIZE=50m
+      - ENABLE_OPENTELEMETRY=1
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
-      - ./opentelemetry_module.conf:/etc/nginx/conf.d/opentelemetry_module.conf
+      - ./00-otel.conf:/etc/nginx/conf.d/00-otel.conf
     ports:
       - "8080:8080"
 
@@ -119,13 +138,23 @@ services:
       restart_policy:
         condition: on-failure
     command:
-      - bench
+      - /home/frappe/frappe-bench/env/bin/opentelemetry-instrument
+      - /home/frappe/frappe-bench/env/bin/python
+      - /home/frappe/frappe-bench/apps/frappe/frappe/utils/bench_helper.py
+      - frappe
       - worker
       - --queue
       - long,default,short
+    environment:
+      - OTEL_SERVICE_NAME=long
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
+      - OTEL_EXPORTER_OTLP_INSECURE=true
+      - OTEL_OTLP_TRACES_PROTOCOL=grpc
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
+    working_dir: /home/frappe/frappe-bench/sites
 
   queue-short:
     image: ghcr.io/org/repo/image:1.0.0
@@ -133,13 +162,23 @@ services:
       restart_policy:
         condition: on-failure
     command:
-      - bench
+      - /home/frappe/frappe-bench/env/bin/opentelemetry-instrument
+      - /home/frappe/frappe-bench/env/bin/python
+      - /home/frappe/frappe-bench/apps/frappe/frappe/utils/bench_helper.py
+      - frappe
       - worker
       - --queue
       - short,default
+    environment:
+      - OTEL_SERVICE_NAME=short
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
+      - OTEL_EXPORTER_OTLP_INSECURE=true
+      - OTEL_OTLP_TRACES_PROTOCOL=grpc
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
+    working_dir: /home/frappe/frappe-bench/sites
 
   redis-queue:
     image: redis:6.2-alpine
@@ -193,6 +232,7 @@ services:
       - 14250:14250
       - 9411:9411
     environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
       - COLLECTOR_OTLP_ENABLED=true
 
 volumes:
