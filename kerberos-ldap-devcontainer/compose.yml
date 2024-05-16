@@ -1,0 +1,160 @@
+services:
+  # LDAP
+  kerberos:
+    container_name: kerberos
+    image: nugaon/kerberos-with-ldap:latest
+    volumes:
+      - /dev/urandom:/dev/random
+    ports:
+      - 8800:88
+      - 4640:464
+      - 7490:749
+  ldap:
+    image: nugaon/openldap-with-kerberos:latest
+    container_name: ldap
+    domainname: "example.com" # important: same as hostname
+    hostname: "example.com"
+    environment:
+        LDAP_LOG_LEVEL: "256"
+        LDAP_ORGANISATION: "Example"
+        LDAP_DOMAIN: "example.com"
+        LDAP_BASE_DN: ""
+        LDAP_ADMIN_PASSWORD: "admin"
+        LDAP_CONFIG_PASSWORD: "config"
+        LDAP_READONLY_USER: "false"
+        LDAP_READONLY_USER_USERNAME: "readonly"
+        LDAP_READONLY_USER_PASSWORD: "readonly"
+        LDAP_RFC2307BIS_SCHEMA: "false"
+        LDAP_BACKEND: "mdb"
+        LDAP_TLS: "true"
+        LDAP_TLS_CRT_FILENAME: "ldap.crt"
+        LDAP_TLS_KEY_FILENAME: "ldap.key"
+        LDAP_TLS_CA_CRT_FILENAME: "ca.crt"
+        LDAP_TLS_ENFORCE: "false"
+        LDAP_TLS_CIPHER_SUITE: "SECURE256:-VERS-SSL3.0"
+        LDAP_TLS_PROTOCOL_MIN: "3.1"
+        LDAP_TLS_VERIFY_CLIENT: "demand"
+        LDAP_REPLICATION: "false"
+        #LDAP_REPLICATION_CONFIG_SYNCPROV: "binddn="cn=admin,cn=config" bindmethod=simple credentials=$LDAP_CONFIG_PASSWORD searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1 starttls=critical"
+        #LDAP_REPLICATION_DB_SYNCPROV: "binddn="cn=admin,$LDAP_BASE_DN" bindmethod=simple credentials=$LDAP_ADMIN_PASSWORD searchbase="$LDAP_BASE_DN" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1 starttls=critical"
+        #docker-compose.ymlLDAP_REPLICATION_HOSTS: "#PYTHON2BASH:['ldap://ldap.example.com','ldap://ldap2.example.com']"
+        KEEP_EXISTING_CONFIG: "false"
+        LDAP_REMOVE_CONFIG_AFTER_SETUP: "false"
+        LDAP_SSL_HELPER_PREFIX: "ldap"
+    tty: true
+    stdin_open: true
+    volumes:
+      - ldap-data:/var/lib/ldap
+      - ldap-config:/etc/ldap/slapd.d
+      - ldap-certs:/container/service/slapd/assets/certs/
+      - ./ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/
+    ports:
+      - "389:389"
+      - "636:636"
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:latest
+    container_name: ldapadmin
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: ldap
+      PHPLDAPADMIN_HTTPS: "false"
+    ports:
+      - "8888:80"
+    depends_on:
+      - ldap
+
+  # Services
+  event-bus:
+    image: emqx/emqx:latest
+    environment:
+      - EMQX_ALLOW_ANONYMOUS=true
+      - EMQX_LOADED_PLUGINS=emqx_management,emqx_auth_mnesia,emqx_recon,emqx_retainer,emqx_dashboard
+    ports:
+      - 1883:1883
+      - 18083:18083
+      - 8081:8081
+
+  mongo:
+    image: bitnami/mongodb:latest
+    environment:
+      - "MONGODB_ROOT_PASSWORD=admin"
+      - "MONGODB_DATABASE=authorization-server"
+      - "MONGODB_USERNAME=authorization-server"
+      - "MONGODB_PASSWORD=admin"
+    volumes:
+      - mongodb-vol:/bitnami/mongodb
+    ports:
+      - 27017:27017
+
+  mongo-configuration:
+    image: bitnami/mongodb:latest
+    user: root
+    volumes:
+      - mongodb-vol:/bitnami
+    command:
+      - bash
+      - -c
+      - >
+        chown -R 1001:1001 /bitnami;
+        sleep 10;
+        mongosh identity-provider \
+          --host mongo \
+          --port 27017 \
+          --username root \
+          --password admin \
+          --authenticationDatabase admin \
+          --eval "db.createUser({user: 'identity-provider', pwd: 'admin', roles:[{role:'dbOwner', db: 'identity-provider'}]});";
+
+        mongosh infrastructure-console \
+          --host mongo \
+          --port 27017 \
+          --username root \
+          --password admin \
+          --authenticationDatabase admin \
+          --eval "db.createUser({user: 'infrastructure-console', pwd: 'admin', roles:[{role:'dbOwner', db: 'infrastructure-console'}]});";
+
+        mongosh communication-server \
+          --host mongo \
+          --port 27017 \
+          --username root \
+          --password admin \
+          --authenticationDatabase admin \
+          --eval "db.createUser({user: 'communication-server', pwd: 'admin', roles:[{role:'dbOwner', db: 'communication-server'}]});";
+
+        mongosh test_authorization-server \
+          --host mongo \
+          --port 27017 \
+          --username root \
+          --password admin \
+          --authenticationDatabase admin \
+          --eval "db.createUser({user: 'authorization-server', pwd: 'admin', roles:[{role:'dbOwner', db: 'test_authorization-server'}]});"
+
+  development:
+    environment:
+      - SHELL=/bin/bash
+      # - XDG_RUNTIME_DIR=/tmp
+      # - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
+      # - DISPLAY=:14
+      # - LIBGL_ALWAYS_INDIRECT=0
+    extra_hosts:
+      example.com: 172.17.0.1
+      www.example.com: 172.17.0.1
+      accounts.localhost: 127.0.0.1
+      admin.localhost: 127.0.0.1
+      connect.localhost: 127.0.0.1
+      myaccount.localhost: 127.0.0.1
+      accounts.example.com: 172.17.0.1
+      admin.example.com: 172.17.0.1
+      connect.example.com: 172.17.0.1
+      myaccount.example.com: 172.17.0.1
+    build: .
+    volumes:
+      - ..:/workspace
+      - ./krb5-client.conf:/etc/krb5.conf
+    working_dir: /workspace
+
+volumes:
+  mongodb-vol:
+  ldap-data:
+  ldap-config:
+  ldap-certs:

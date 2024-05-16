@@ -1,0 +1,22 @@
+{
+    "name": "development",
+    "remoteEnv": {
+        "SYNC_LOCALHOST_KUBECONFIG": "true"
+    },
+    "dockerComposeFile": "./compose.yml",
+    "service": "development",
+    "workspaceFolder": "/workspace",
+    "shutdownAction": "stopCompose",
+    "remoteUser": "vscode",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "streetsidesoftware.code-spell-checker",
+                "dbaeumer.vscode-eslint",
+                "eamodio.gitlens",
+                "esbenp.prettier-vscode",
+                "prettier.prettier-vscode"
+            ]
+        }
+    }
+}

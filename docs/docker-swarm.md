@@ -38,6 +38,15 @@ usermod -aG docker ubuntu
 su - ubuntu
 ```
 
+Clone this repo
+
+```shell
+git clone https://github.com/castlecraft/custom_containers
+cd custom_containers
+```
+
+Note: traefik and portainer yamls specified in the further commands are in `compose` directory.
+
 ### Setup Docker Swarm
 
 Initialize swarm
