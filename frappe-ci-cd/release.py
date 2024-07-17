@@ -13,7 +13,7 @@ cli_print = print  # noqa: T001, T002, T202
 def main():
     parser = get_args_parser()
     if len(sys.argv) == 1:
-        parser.cli_print_help(sys.stderr)
+        parser.print_help(sys.stderr)
         sys.exit(1)
 
     args = parser.parse_args()
