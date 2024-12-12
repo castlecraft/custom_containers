@@ -1,0 +1,50 @@
+version: "3.7"
+
+services:
+  wordpress:
+    image: docker.io/bitnami/wordpress:6.7.1
+    deploy:
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.middlewares.prod-redirect.redirectscheme.scheme=https
+        # Change router name prefix from erpnext to the name of stack in case of multi bench setup
+        - traefik.http.routers.cc-wordpress-http.rule=Host(${SITES:?No sites set})
+        - traefik.http.routers.cc-wordpress-http.entrypoints=http
+        # Remove following lines in case of local setup
+        - traefik.http.routers.cc-wordpress-http.middlewares=prod-redirect
+        - traefik.http.routers.cc-wordpress-https.rule=Host(${SITES})
+        - traefik.http.routers.cc-wordpress-https.entrypoints=https
+        - traefik.http.routers.cc-wordpress-https.tls=true
+        - traefik.http.routers.cc-wordpress-https.tls.certresolver=le
+        # Remove above lines in case of local setup
+        # Uncomment and change domain for non-www to www redirect
+        # - traefik.http.routers.cc-wordpress-https.middlewares=nonwwwtowww
+        # - traefik.http.middlewares.nonwwwtowww.redirectregex.regex=^https?://(?:www\.)?(.*)
+        # - traefik.http.middlewares.nonwwwtowww.redirectregex.replacement=https://www.$$1
+        - traefik.http.services.cc-wordpress.loadbalancer.server.port=8080
+    environment:
+      WORDPRESS_DATABASE_HOST: mariadb_db
+      WORDPRESS_DATABASE_PORT_NUMBER: "3306"
+      WORDPRESS_DATABASE_USER: ${DB_USER:-cc_wordpress}
+      WORDPRESS_DATABASE_NAME: ${DB_NAME:-cc_wordpress}
+      WORDPRESS_DATABASE_PASSWORD: ${DB_PASSWORD:?No sites set}
+    volumes:
+      - 'wordpress-data:/bitnami/wordpress'
+    networks:
+      - mariadb-network
+      - traefik-public
+
+volumes:
+  wordpress-data:
+
+networks:
+  mariadb-network:
+    name: mariadb-network
+    external: true
+  traefik-public:
+    name: traefik-public
+    external: true
