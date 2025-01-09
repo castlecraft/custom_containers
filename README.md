@@ -14,3 +14,4 @@ From Jan 2023, Official frappe_docker has easy process to build custom images. R
 - [Frappe Base Workflow for Enterprise](docs/frappe-ci-cd.md)
 - [Frappe Continuous Deployment](docs/frappe-cd.md)
 - [Portainer based shared development](docs/pre-dev-vm.md)
+- [Getting Started for Enterprise](docs/getting-started-for-enterprise.md)
