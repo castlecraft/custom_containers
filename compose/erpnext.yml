@@ -1,8 +1,11 @@
+x-custom-image: &custom_image
+  image: ${IMAGE_NAME:-docker.io/frappe/erpnext}:${VERSION}
+
 version: "3.7"
 
 services:
   backend:
-    image: frappe/erpnext:${VERSION:?No image version set}
+    <<: *custom_image
     deploy:
       restart_policy:
         condition: on-failure
@@ -14,7 +17,7 @@ services:
       - bench-network
 
   frontend:
-    image: frappe/erpnext:${VERSION}
+    <<: *custom_image
     command:
       - nginx-entrypoint.sh
     deploy:
@@ -55,7 +58,7 @@ services:
       - traefik-public
 
   queue-default:
-    image: frappe/erpnext:${VERSION}
+    <<: *custom_image
     deploy:
       restart_policy:
         condition: on-failure
@@ -72,7 +75,7 @@ services:
       - bench-network
 
   queue-long:
-    image: frappe/erpnext:${VERSION}
+    <<: *custom_image
     deploy:
       restart_policy:
         condition: on-failure
@@ -89,7 +92,7 @@ services:
       - bench-network
 
   queue-short:
-    image: frappe/erpnext:${VERSION}
+    <<: *custom_image
     deploy:
       restart_policy:
         condition: on-failure
@@ -106,7 +109,7 @@ services:
       - bench-network
 
   scheduler:
-    image: frappe/erpnext:${VERSION}
+    <<: *custom_image
     deploy:
       restart_policy:
         condition: on-failure
@@ -121,7 +124,7 @@ services:
       - bench-network
 
   websocket:
-    image: frappe/erpnext:${VERSION}
+    <<: *custom_image
     command:
       - node
       - /home/frappe/frappe-bench/apps/frappe/socketio.js
@@ -136,7 +139,7 @@ services:
       - bench-network
 
   migration:
-    image: frappe/erpnext:${VERSION}
+    <<: *custom_image
     deploy:
       restart_policy:
         condition: none
