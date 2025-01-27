@@ -1,5 +1,6 @@
 x-custom-image: &custom_image
-  image: ${IMAGE_NAME:-docker.io/frappe/erpnext}:${VERSION}
+  image: ${IMAGE_NAME:-docker.io/frappe/erpnext}:${VERSION?No version set}
+  pull_policy: ${PULL_POLICY:-missing}
 
 version: "3.7"
 
@@ -11,10 +12,17 @@ services:
         condition: on-failure
     volumes:
       - sites:/home/frappe/frappe-bench/sites
-      - logs:/home/frappe/frappe-bench/logs
     networks:
       - mariadb-network
       - bench-network
+    healthcheck:
+      test:
+        - CMD
+        - wait-for-it
+        - "0.0.0.0:8000"
+      interval: 2s
+      timeout: 10s
+      retries: 30
 
   frontend:
     <<: *custom_image
@@ -52,10 +60,17 @@ services:
       UPSTREAM_REAL_IP_RECURSIVE: "off"
     volumes:
       - sites:/home/frappe/frappe-bench/sites
-      - logs:/home/frappe/frappe-bench/logs
     networks:
       - bench-network
       - traefik-public
+    healthcheck:
+      test:
+        - CMD
+        - wait-for-it
+        - "0.0.0.0:8080"
+      interval: 2s
+      timeout: 30s
+      retries: 30
 
   queue-default:
     <<: *custom_image
@@ -69,10 +84,17 @@ services:
       - default
     volumes:
       - sites:/home/frappe/frappe-bench/sites
-      - logs:/home/frappe/frappe-bench/logs
     networks:
       - mariadb-network
       - bench-network
+    healthcheck:
+      test:
+        - CMD
+        - wait-for-it
+        - "redis-queue:6379"
+      interval: 2s
+      timeout: 10s
+      retries: 30
 
   queue-long:
     <<: *custom_image
@@ -86,10 +108,17 @@ services:
       - long
     volumes:
       - sites:/home/frappe/frappe-bench/sites
-      - logs:/home/frappe/frappe-bench/logs
     networks:
       - mariadb-network
       - bench-network
+    healthcheck:
+      test:
+        - CMD
+        - wait-for-it
+        - "redis-queue:6379"
+      interval: 2s
+      timeout: 10s
+      retries: 30
 
   queue-short:
     <<: *custom_image
@@ -103,10 +132,17 @@ services:
       - short
     volumes:
       - sites:/home/frappe/frappe-bench/sites
-      - logs:/home/frappe/frappe-bench/logs
     networks:
       - mariadb-network
       - bench-network
+    healthcheck:
+      test:
+        - CMD
+        - wait-for-it
+        - "redis-queue:6379"
+      interval: 2s
+      timeout: 10s
+      retries: 30
 
   scheduler:
     <<: *custom_image
@@ -118,10 +154,17 @@ services:
       - schedule
     volumes:
       - sites:/home/frappe/frappe-bench/sites
-      - logs:/home/frappe/frappe-bench/logs
     networks:
       - mariadb-network
       - bench-network
+    healthcheck:
+      test:
+        - CMD
+        - wait-for-it
+        - "redis-queue:6379"
+      interval: 2s
+      timeout: 10s
+      retries: 30
 
   websocket:
     <<: *custom_image
@@ -133,14 +176,23 @@ services:
         condition: on-failure
     volumes:
       - sites:/home/frappe/frappe-bench/sites
-      - logs:/home/frappe/frappe-bench/logs
     networks:
       - mariadb-network
       - bench-network
+    healthcheck:
+      test:
+        - CMD
+        - wait-for-it
+        - "0.0.0.0:9000"
+      interval: 2s
+      timeout: 10s
+      retries: 30
 
   migration:
     <<: *custom_image
     deploy:
+      mode: replicated
+      replicas: ${MIGRATE:-1}
       restart_policy:
         condition: none
     entrypoint: ["bash", "-c"]
@@ -153,20 +205,56 @@ services:
         bench --site all set-config -p pause_scheduler 0
     volumes:
       - sites:/home/frappe/frappe-bench/sites
-      - logs:/home/frappe/frappe-bench/logs
     networks:
       - mariadb-network
       - bench-network
+
+  backup-sites:
+    <<: *custom_image
+    deploy:
+      mode: replicated
+      replicas: 0
+      labels:
+        - "swarm.cronjob.enable=true"
+        - "swarm.cronjob.schedule=0 */6 * * *"
+        - "swarm.cronjob.skip-running=false"
+      restart_policy:
+        condition: none
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        bench --site all backup
+        ## Uncomment for restic snapshots.
+        # restic snapshots || restic init
+        # restic backup sites
+        ## Uncomment to keep only last 30 snapshots.
+        # restic forget --group-by=paths --keep-last=30 --prune
+    environment:
+      - RESTIC_REPOSITORY=${RESTIC_REPOSITORY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - RESTIC_PASSWORD=${RESTIC_PASSWORD}
+    volumes:
+      - "sites:/home/frappe/frappe-bench/sites"
+    networks:
+      - bench-network
+      - mariadb-network
 
   redis-cache:
     image: redis:6.2-alpine
     deploy:
       restart_policy:
         condition: on-failure
-    volumes:
-      - redis-cache-data:/data
     networks:
       - bench-network
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
   redis-queue:
     image: redis:6.2-alpine
@@ -177,6 +265,14 @@ services:
       - redis-queue-data:/data
     networks:
       - bench-network
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
   redis-socketio:
     image: redis:6.2-alpine
@@ -187,14 +283,26 @@ services:
       - redis-socketio-data:/data
     networks:
       - bench-network
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
 volumes:
-  db-data:
-  redis-cache-data:
   redis-queue-data:
   redis-socketio-data:
   sites:
-  logs:
+    # # change ip from 1.2.3.4 to your NFS server ip
+    # driver_opts:
+    #   # AWS EFS
+    #   # o: "addr=fs-55Nuv9e5kB2W2ajdL.efs.us-east-1.amazonaws.com,nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport"
+    #   o: "addr=1.2.3.4,nfsvers=4,rw,nolock,soft"
+    #   type: "nfs"
+    #   device: ":/var/nfs/general/bench01"
 
 networks:
   bench-network:
@@ -207,4 +315,17 @@ networks:
     name: traefik-public
     external: true
 
-# Note: set VERSION, BENCH_NAME and SITES
+# ------------------------+--------------------------------------+---------
+# Env Variables           | Description                          | Default
+# ------------------------+--------------------------------------+---------
+# AWS_ACCESS_KEY_ID       | AWS Access Key for restic            | nil
+# AWS_SECRET_ACCESS_KEY   | AWS Secret Key for restic            | nil
+# BENCH_NAME              | Name of the bench newtork            | erpnext
+# IMAGE_NAME              | Container image to use               | docker.io/frappe/erpnext
+# MIGRATE                 | Enable migration on deploy           | 1
+# PULL_POLICY             | Image Pull Policy                    | missing
+# RESTIC_PASSWORD         | Restic Password. DO NOT Forget!      | nil
+# RESTIC_REPOSITORY       | Path Styled S3 endpoint              | nil
+# SITES                   | Mandatory List of sites as back      | nil
+#                         | quoted strings, e.g. `a.com`,`b.org` |
+# VERSION                 | Mandatory image tag to use           | nil
