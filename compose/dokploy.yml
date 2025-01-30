@@ -1,0 +1,46 @@
+### Installation
+#
+# docker swarm leave --force 2>/dev/null
+# export ADVERTISE_ADDR=1.2.3.4
+# export DOKPLOY_DOMAIN=dokploy-127-0-0-1.traefik.me
+# docker swarm init --advertise-addr $ADVERTISE_ADDR
+# docker network rm -f dokploy-network 2>/dev/null
+# docker network create --driver overlay --attachable dokploy-network
+# mkdir -p /etc/dokploy
+# chmod 777 /etc/dokploy
+# docker pull postgres:16
+# docker pull redis:7
+# docker pull traefik:v3.1.2
+# docker pull dokploy/dokploy:latest
+# docker stack deploy -c dokploy.yml dokploy -d
+
+version: '3.8'
+
+services:
+  dokploy:
+    image: dokploy/dokploy:latest
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.dokploy-http.rule=Host(`${DOKPLOY_DOMAIN?DOKPLOY_DOMAIN not set}`)
+        - traefik.http.routers.dokploy-http.entrypoints=web
+        - traefik.http.routers.dokploy-http.middlewares=redirect-to-https
+        - traefik.http.routers.dokploy-https.rule=Host(`${DOKPLOY_DOMAIN}`)
+        - traefik.http.routers.dokploy-https.entrypoints=websecure
+        - traefik.http.routers.dokploy-https.tls=true
+        - traefik.http.routers.dokploy-https.tls.certresolver=letsencrypt
+        - traefik.http.services.dokploy.loadbalancer.server.port=3000
+    networks:
+      - dokploy-network
+    environment:
+      PORT: "${PORT:-3000}"
+      TRAEFIK_SSL_PORT: "${TRAEFIK_SSL_PORT:-443}"
+      TRAEFIK_PORT: "${TRAEFIK_PORT:-80}"
+      ADVERTISE_ADDR: "${ADVERTISE_ADDR:?ADVERTISE_ADDR not set}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/dokploy:/etc/dokploy
+
+networks:
+  dokploy-network:
+    external: true
