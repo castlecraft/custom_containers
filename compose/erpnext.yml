@@ -1,8 +1,7 @@
 x-custom-image: &custom_image
   image: ${IMAGE_NAME:-docker.io/frappe/erpnext}:${VERSION?No version set}
-  pull_policy: ${PULL_POLICY:-missing}
 
-version: "3.7"
+version: "3.9"
 
 services:
   backend:
@@ -323,7 +322,6 @@ networks:
 # BENCH_NAME              | Name of the bench newtork            | erpnext
 # IMAGE_NAME              | Container image to use               | docker.io/frappe/erpnext
 # MIGRATE                 | Enable migration on deploy           | 1
-# PULL_POLICY             | Image Pull Policy                    | missing
 # RESTIC_PASSWORD         | Restic Password. DO NOT Forget!      | nil
 # RESTIC_REPOSITORY       | Path Styled S3 endpoint              | nil
 # SITES                   | Mandatory List of sites as back      | nil
