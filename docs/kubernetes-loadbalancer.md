@@ -26,7 +26,7 @@ For Internal LB add appropriate annotation as per your cloud provider. e.g. Digi
 helm upgrade --install ingress-nginx ingress-nginx \
   --repo https://kubernetes.github.io/ingress-nginx \
   --namespace ingress-nginx --create-namespace \
-  --set service.annotations."service\.beta\.kubernetes\.io/do-loadbalancer-network"="INTERNAL"
+  --set controller.service.annotations."service\.beta\.kubernetes\.io/do-loadbalancer-network"="INTERNAL"
 ```
 
 Reference:
