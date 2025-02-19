@@ -61,6 +61,8 @@ Comprehensive guide available at [dockerswarm.rocks](https://dockerswarm.rocks)
 
 ### Setup Traefik
 
+More on [Traefik](https://dockerswarm.rocks/traefik/)
+
 Label the master node to install Traefik
 
 ```shell
@@ -84,24 +86,26 @@ Password: $ enter your password here
 Verifying - Password: $ re enter your password here
 ```
 
-Note:
-
 Install Traefik in production
 
 ```shell
 docker stack deploy -c compose/traefik-host.yml traefik
 ```
 
-Install Traefik in dind
+<details>
+
+<summary>Install Traefik in dind</summary>
 
 ```shell
 source /workspace/dind-devcontainer/setup-docker-env.sh
 docker stack deploy -c /workspace/compose/traefik-dind.yml traefik
 ```
 
-More on [Traefik](https://dockerswarm.rocks/traefik/)
+</details>
 
 ### Setup Portainer
+
+More on [portainer](https://dockerswarm.rocks/portainer)
 
 Label the master node to install portainer
 
@@ -109,29 +113,25 @@ Label the master node to install portainer
 docker node update --label-add portainer.portainer-data=true $(docker info -f '{{.Swarm.NodeID}}')
 ```
 
-Set portainer domain
-
-```shell
-export PORTAINER_DOMAIN=portainer.example.com
-# or
-export PORTAINER_DOMAIN=portainer.localhost
-```
-
 Install Portainer in production
 
 ```shell
+# Set domain
+export PORTAINER_DOMAIN=portainer.example.com
+# Install
 docker stack deploy -c compose/portainer.yml portainer
-```
-
-Install Portainer in dind
-
-```shell
-docker stack deploy -c /workspace/compose/portainer-dind.yml portainer
 ```
 
 <details>
 
-<summary>Additional commands for dind only</summary>
+<summary>Install Portainer in dind</summary>
+
+```shell
+# Set domain
+export PORTAINER_DOMAIN=portainer.localhost
+# Install
+docker stack deploy -c /workspace/compose/portainer-dind.yml portainer
+```
 
 Initialize portainer
 
@@ -161,8 +161,6 @@ http POST \
 ```
 
 </details>
-
-More on [portainer](https://dockerswarm.rocks/portainer)
 
 ### Setup MariaDB
 
