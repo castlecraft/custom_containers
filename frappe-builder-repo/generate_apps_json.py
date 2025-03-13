@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
+
 import argparse
 import os
+import sys
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
@@ -9,7 +12,7 @@ def get_args_parser():
         "-t",
         "--template",
         action="store",
-        help="path to template",
+        help="name of template from benches directory or directory specified in $APP_JSONS environment variable, e.g. production.json, staging.json",
     )
     return parser
 
@@ -25,6 +28,9 @@ def render_apps_json(args: argparse.Namespace):
 
 def main():
     parser = get_args_parser()
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
     args = parser.parse_args()
     render_apps_json(args)
 
