@@ -132,7 +132,7 @@ spec:
       targetPort: 27017
 ```
 
-<details>
+</details>
 
 ### Port forward FerretDB service
 
