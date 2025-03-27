@@ -53,11 +53,6 @@ spec:
   bootstrap:
     initdb:
       postInitSQL:
-        - "CREATE EXTENSION IF NOT EXISTS pg_cron;"
-        - "CREATE EXTENSION IF NOT EXISTS postgis;"
-        - "CREATE EXTENSION IF NOT EXISTS vector;"
-        - "CREATE EXTENSION IF NOT EXISTS tsm_system_rows;"
-        - "CREATE EXTENSION IF NOT EXISTS rum;"
         - "CREATE EXTENSION IF NOT EXISTS documentdb CASCADE;"
 
   storage:
