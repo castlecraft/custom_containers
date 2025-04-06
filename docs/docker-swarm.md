@@ -7,6 +7,7 @@
 - [Setup MariaDB](#setup-mariadb)
 - [Setup Swarm CRON](#setup-swarm-cron)
 - [Setup ERPNext](#setup-erpnext)
+- [Advance Configuration](#advance-configuration)
 
 ### Install Prerequisites
 
