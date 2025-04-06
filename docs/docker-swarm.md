@@ -181,3 +181,50 @@ In case of docker setup there is not CRON scheduler running. It is needed to tak
 - `compose/erpnext.yml`: Use to create the `erpnext` stack. Set variable names mentioned in the YAML comments.
 - `compose/configure-erpnext.yml`: Use to setup `sites/common_site_config.json`. Set `VERSION` and optionally `BENCH_NAME` environment variables.
 - `compose/create-site.yml`: Use to create a site. Set `VERSION` and optionally `BENCH_NAME` environment variables. Change the command for site name, apps to be installed, admin password and db root password.
+
+
+### Advance Configuration
+
+#### Nginx max body size:
+
+refer: https://github.com/nginx-proxy/nginx-proxy/issues/690#issuecomment-275560780
+
+Add `config`:
+
+```
+client_max_body_size 0;
+```
+
+Attach config in `erpnext.yml` on `frontend` service:
+
+```yaml
+services:
+  # ...
+  frontend:
+    # ...
+    configs:
+      - source: nginx-body-size-disable
+        target: /etc/nginx/conf.d/disable_mbs.conf
+        uid: "1000"
+        gid: "1000"
+        mode: 0440
+  # ...
+
+configs:
+  nginx-body-size-disable:
+    external: true
+```
+
+#### Set limits and reservation / requests
+
+```yaml
+services:
+  backend:
+    <<: *custom_image
+    deploy:
+      # ...
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 650M
+```
