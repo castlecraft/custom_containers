@@ -1,6 +1,7 @@
 # VSCode Remote SSH and DevContainer Setup Guide
 
-This guide will walk you through setting up VSCode to connect to a remote server via SSH, open a remote folder, and then re-open it within a DevContainer for a seamless development experience.
+WARNING: It is recommended for developers to understand containerization, docker setup and builds.
+Tradeoff here is, developer skills vs VM cost. If developer skills are not possible only options remains is to setup a vm for development. It is costlier because you are paying for a developer as well as a VM.
 
 ## Prerequisites
 
