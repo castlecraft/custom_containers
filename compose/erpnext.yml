@@ -7,6 +7,11 @@ services:
   backend:
     <<: *custom_image
     deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 3072M
       restart_policy:
         condition: on-failure
     volumes:
@@ -28,6 +33,7 @@ services:
     command:
       - nginx-entrypoint.sh
     deploy:
+      replicas: 3
       restart_policy:
         condition: on-failure
       labels:
@@ -74,6 +80,11 @@ services:
   queue-default:
     <<: *custom_image
     deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 2048M
+      replicas: 5
       restart_policy:
         condition: on-failure
     command:
@@ -98,6 +109,11 @@ services:
   queue-long:
     <<: *custom_image
     deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 3072M
+      replicas: 5
       restart_policy:
         condition: on-failure
     command:
