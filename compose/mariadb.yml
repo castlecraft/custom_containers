@@ -12,6 +12,13 @@ services:
       - --collation-server=utf8mb4_unicode_ci
       - --skip-character-set-client-handshake
       - --skip-innodb-read-only-compressed
+
+      - --innodb-buffer-pool-size=4096M
+      - --max_allowed_packet=3G
+      - --net_read_timeout=4600  
+      - --net_write_timeout=4600 
+      - --wait_timeout=4600      
+      - --interactive_timeout=4600
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-admin}
     volumes:
