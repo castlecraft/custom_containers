@@ -1,0 +1,87 @@
+services:
+  book-keeper:
+    image: registry.gitlab.com/castlecraft/citadel/book-keeper:latest
+    security_opt:
+      - seccomp=unconfined
+    # publish ports to access from host machine
+    ports:
+      - "9000:9000" # change as per need
+    command:
+      - "uvicorn"
+      - "book_keeper.main:app"
+      - "--host=0.0.0.0"
+      - "--port=9000" # change as per need
+      - --log-config=/app/logging.debug.ini
+    environment:
+      ## Use KurrentDB for the event store
+      - EVENT_STORE_BACKEND=kurrentdb
+      - LEDGER_STORAGE_BACKEND=tigerbeetle
+      - EVENTING_BACKEND=nats
+      - KURRENTDB_URL=esdb://kurrentdb:2113?tls=false
+      - NATS_URL=nats://nats:4222
+      - AUTHORIZATION_ENGINE=casbin
+      - DEFAULT_TENANTS=twophasetenant
+      - CASBIN_POLICY_PATH=/app/book_keeper/infrastructure/authorization/policy.test.csv
+      - NATS_STREAM_SUBJECT=["bk.events.>"]
+      - TIGERBEETLE_CLUSTER_ID=0
+      - TIGERBEETLE_REPLICA_ADDRESSES=172.20.0.10:3000
+      - ENABLE_IN_APP_PROJECTORS=true
+    networks:
+      default:
+        # Use the custom network defined below
+        # Optional: Give 'book-keeper' a static IP too
+        ipv4_address: 172.20.0.50
+    depends_on:
+      kurrentdb:
+        condition: service_healthy
+
+  tigerbeetle:
+    image: ghcr.io/tigerbeetle/tigerbeetle:latest
+    security_opt:
+      - seccomp=unconfined
+    entrypoint: /entrypoint-tigerbeetle.sh
+    command: /tigerbeetle start --development --addresses=0.0.0.0:3000 /data/0_0.tigerbeetle
+    volumes:
+      - ./entrypoint-tigerbeetle.sh:/entrypoint-tigerbeetle.sh
+      - tigerbeetle_data:/data
+    networks:
+      default:
+        # Assign the static IP used in the 'app' environment variable
+        ipv4_address: 172.20.0.10
+
+  nats:
+    image: nats:2.10-alpine
+    # The '-js' flag enables JetStream
+    command: "-js"
+    volumes:
+      - nats_data:/data
+    networks:
+      default: {}
+
+  kurrentdb:
+    image: docker.kurrent.io/kurrent-latest/kurrentdb:latest
+    command: [ "--insecure", "--run-projections=All", "--enable-atom-pub-over-http" ]
+    environment:
+      - KURRENTDB_CLUSTER_SIZE=1
+    volumes:
+      - kurrentdb_data:/var/lib/kurrentdb
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:2113/health/live || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      default: {}
+
+# Define the custom network and IP subnet
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+volumes:
+  tigerbeetle_data: {}
+  nats_data: {}
+  kurrentdb_data: {}
