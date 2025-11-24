@@ -19,8 +19,10 @@ Follow these steps to get the environment up and running.
 The `develop.yaml` file defines all the services required for the `book-keeper` application to run. Start them using Docker Compose:
 
 ```bash
-docker compose -p book-keeper -f develop.yaml up -d
+GATEWAY_PREFIX=172.32 docker compose -p book-keeper -f develop.yaml up -d
 ```
+
+Note: `GATEWAY_PREFIX` can be changed if you already have docker network created.
 
 This command will:
 - Use the project name `book-keeper` (`-p book-keeper`).

@@ -24,13 +24,13 @@ services:
       - CASBIN_POLICY_PATH=/app/book_keeper/infrastructure/authorization/policy.test.csv
       - NATS_STREAM_SUBJECT=["bk.events.>"]
       - TIGERBEETLE_CLUSTER_ID=0
-      - TIGERBEETLE_REPLICA_ADDRESSES=172.20.0.10:3000
+      - TIGERBEETLE_REPLICA_ADDRESSES=${GATEWAY_PREFIX:-172.20}.0.10:3000
       - ENABLE_IN_APP_PROJECTORS=true
     networks:
       default:
         # Use the custom network defined below
         # Optional: Give 'book-keeper' a static IP too
-        ipv4_address: 172.20.0.50
+        ipv4_address: ${GATEWAY_PREFIX:-172.20}.0.50
     depends_on:
       kurrentdb:
         condition: service_healthy
@@ -47,7 +47,7 @@ services:
     networks:
       default:
         # Assign the static IP used in the 'app' environment variable
-        ipv4_address: 172.20.0.10
+        ipv4_address: ${GATEWAY_PREFIX:-172.20}.0.10
 
   nats:
     image: nats:2.10-alpine
@@ -79,7 +79,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/24
+        - subnet: ${GATEWAY_PREFIX:-172.20}.0.0/24
 
 volumes:
   tigerbeetle_data: {}
