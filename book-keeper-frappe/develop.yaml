@@ -5,12 +5,12 @@ services:
       - seccomp=unconfined
     # publish ports to access from host machine
     ports:
-      - "9000:9000" # change as per need
+      - "8000:8000" # change as per need
     command:
       - "uvicorn"
       - "book_keeper.main:app"
       - "--host=0.0.0.0"
-      - "--port=9000" # change as per need
+      - "--port=8000" # change as per need
       - --log-config=/app/logging.debug.ini
     environment:
       ## Use KurrentDB for the event store
