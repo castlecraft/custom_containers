@@ -73,6 +73,31 @@ services:
     networks:
       default: {}
 
+  # For Projections
+  mariadb:
+    image: mariadb:10.6
+    environment:
+      - MYSQL_ROOT_PASSWORD=changeit
+      - MYSQL_DATABASE=bkprojections
+      - MYSQL_USER=bkuser
+      - MYSQL_PASSWORD=bkpassword
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      default: {}
+
+  bk-projector:
+    image: registry.gitlab.com/castlecraft/cepl-erpnext-images/book-keeper-projector:latest
+    environment:
+      - NATS_URL=nats://nats:4222
+      - READ_DB_URL=mysql+aiomysql://bkuser:bkpassword@mariadb:3306/bkprojections
+      - NATS_SUBJECT=bk.events.JournalEntryPosted
+      # Default stream by book keeper
+      - NATS_STREAM=book_keeper_stream
+      - DURABLE_CONSUMER_NAME=projector_general_ledger
+    networks:
+      default: {}
+
 # Define the custom network and IP subnet
 networks:
   default:
@@ -85,3 +110,4 @@ volumes:
   tigerbeetle_data: {}
   nats_data: {}
   kurrentdb_data: {}
+  mariadb_data: {}
