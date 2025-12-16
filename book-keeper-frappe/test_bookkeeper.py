@@ -95,7 +95,7 @@ def main():
             {"code": "sys_rate_limiter_credit", "name": "Rate Limiter Credit", "type": "liability"},
         ],
     }
-    make_request("POST", "/accounts", 204, payload=accounts_payload)
+    make_request("POST", "/accounts", 200, payload=accounts_payload)
 
     # 2. Test: Single-Phase (Standard) Journal Entry
     log_info("--- Running SINGLE-PHASE COMMIT Scenario ---")
