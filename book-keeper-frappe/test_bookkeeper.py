@@ -6,7 +6,7 @@ import uuid
 import httpx
 
 # --- Configuration ---
-HOST = os.getenv("BOOKKEEPER_HOST", "http://localhost:9000")
+HOST = os.getenv("BOOKKEEPER_HOST", "http://localhost:9090")
 API_PREFIX = "/api/book-keeper/v1"
 TENANT_ID = "twophasetenant"
 HEADERS = {"Content-Type": "application/json", "Accept": "application/json"}

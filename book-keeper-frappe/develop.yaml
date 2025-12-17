@@ -5,13 +5,19 @@ services:
       - seccomp=unconfined
     # publish ports to access from host machine
     ports:
-      - "8000:8000" # change as per need
+      - "9090:9090"
     command:
       - "uvicorn"
       - "book_keeper.main:app"
       - "--host=0.0.0.0"
-      - "--port=8000" # change as per need
+      - "--port=9090"
       - --log-config=/app/logging.debug.ini
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9090/api/book-keeper/v1/healthz').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     environment:
       ## Use KurrentDB for the event store
       - EVENT_STORE_BACKEND=kurrentdb
@@ -97,6 +103,9 @@ services:
       - DURABLE_CONSUMER_NAME=projector_general_ledger
     networks:
       default: {}
+    depends_on:
+      book-keeper:
+        condition: service_healthy
 
 # Define the custom network and IP subnet
 networks:
