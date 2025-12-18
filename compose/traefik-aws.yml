@@ -9,6 +9,10 @@ services:
         published: 80
         mode: host
     deploy:
+      placement:
+        constraints:
+          # Required for the TLS certificates
+          - node.labels.traefik-public.traefik-public-certificates == true
       labels:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-public"
