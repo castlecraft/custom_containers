@@ -1,0 +1,43 @@
+version: '3.7'
+
+services:
+  traefik:
+    image: traefik:${TRAEFIK_VERSION:-v3.3}
+    ports:
+      # We only need port 80. AWS ALB will send traffic here.
+      - target: 80
+        published: 80
+        mode: host
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-public"
+        - "traefik.constraint-label=traefik-public"
+        # Middleware for Dashboard Security
+        - "traefik.http.middlewares.admin-auth.basicauth.users=admin:${HASHED_PASSWORD?Variable not set}"
+        # Dashboard Router - Now using HTTP because ALB handles the SSL layer
+        - "traefik.http.routers.traefik-public.rule=Host(`${TRAEFIK_DOMAIN?Variable not set}`)"
+        - "traefik.http.routers.traefik-public.entrypoints=http"
+        - "traefik.http.routers.traefik-public.service=api@internal"
+        - "traefik.http.routers.traefik-public.middlewares=admin-auth"
+        # Define the internal port for the Traefik API
+        - "traefik.http.services.traefik-public.loadbalancer.server.port=8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - "--providers.docker"
+      - "--providers.docker.constraints=Label(`traefik.constraint-label`, `traefik-public`)"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.swarm.endpoint=unix:///var/run/docker.sock"
+      # We only need the HTTP entrypoint
+      - "--entrypoints.http.address=:80"
+      - "--accesslog"
+      - "--log"
+      - "--api"
+    networks:
+      - traefik-public
+
+networks:
+  traefik-public:
+    name: traefik-public
+    external: true
