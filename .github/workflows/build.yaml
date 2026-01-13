@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       ### Comment start - when not using docker build actions
       - name: Set up QEMU
@@ -89,7 +89,7 @@ jobs:
       #     file: ${{ inputs.dockerfile || env.DOCKERFILE }}
 
       ### Using docker build
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           repository: frappe/frappe_docker
           path: builds
