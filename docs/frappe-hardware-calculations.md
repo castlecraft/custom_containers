@@ -6,7 +6,9 @@ To accurately size your Kubernetes nodes and Database clusters, we must calculat
 *   **Concurrent Users (10%):** Of the active users, 10% are strictly concurrent (clicking, saving, or generating reports at the *exact same second*).
 
 **Mathematical Model:**
-$$ \text{Concurrent Users} = (\text{Total Users} \times 0.75) \times 0.10 $$
+```math
+\text{Concurrent Users} = (\text{Total Users} \times 0.75) \times 0.10
+```
 
 *Example for 1,000 Total Users:*
 *   Active Users = 750
@@ -68,7 +70,9 @@ For production, deploy MariaDB in a High Availability setup (e.g., Galera Cluste
 1.  `innodb_buffer_pool_size`: Set to 70%-80% of the total RAM.
 2.  `innodb_buffer_pool_instances`: Set to 1 for every 1GB of buffer pool size (e.g., if pool is 16GB, instances = 16).
 3.  `max_connections`: Must be sized to handle the maximum potential pods. Formula:
-    $$ \text{Max DB Connections} > (\text{Max Gunicorn Pods} \times \text{Workers} \times \text{Threads}) + \text{Background Workers} + \text{Buffer} $$
+    ```math
+    \text{Max DB Connections} > (\text{Max Gunicorn Pods} \times \text{Workers} \times \text{Threads}) + \text{Background Workers} + \text{Buffer}
+    ```
 
 ## 4. Additional Architecture & Deployment Considerations
 
