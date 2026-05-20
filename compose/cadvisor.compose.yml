@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    # cAdvisor needs extensive read-only access to the host file system to see container metrics
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "9091:8080"
+    deploy:
+      # Forces exactly one replica per Swarm node
+      mode: global
+      resources:
+        limits:
+          # Prevents cAdvisor from consuming too much RAM
+          memory: 128M
