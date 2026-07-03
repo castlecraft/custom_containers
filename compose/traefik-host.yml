@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   traefik:
-    image: traefik:${TRAEFIK_VERSION:-v3.3}
+    image: traefik:${TRAEFIK_VERSION:-v3.7.6}
     ports:
       - target: 80
         published: 80
@@ -17,7 +17,7 @@ services:
           - node.labels.traefik-public.traefik-public-certificates == true
       labels:
         - traefik.enable=true
-        - traefik.docker.network=traefik-public
+        - traefik.swarm.network=traefik-public
         - traefik.constraint-label=traefik-public
         - traefik.http.middlewares.admin-auth.basicauth.users=admin:${HASHED_PASSWORD?Variable not set}
         - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
@@ -36,10 +36,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik-public-certificates:/certificates
     command:
-      - --providers.docker
-      - --providers.docker.constraints=Label(`traefik.constraint-label`, `traefik-public`)
-      - --providers.docker.exposedbydefault=false
+      - --providers.swarm=true
       - --providers.swarm.endpoint=unix:///var/run/docker.sock
+      - --providers.swarm.constraints=Label(`traefik.constraint-label`, `traefik-public`)
+      - --providers.swarm.exposedByDefault=false
       - --entrypoints.http.address=:80
       - --entrypoints.https.address=:443
       - --certificatesresolvers.le.acme.email=${EMAIL?Variable not set}
