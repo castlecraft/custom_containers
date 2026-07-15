@@ -59,7 +59,7 @@ jobs:
       ### Comment end - when not using docker build actions
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v4
         with:
           registry: ${{ inputs.registry || env.REGISTRY }}
           username: ${{ inputs.registry-user || github.actor }}
